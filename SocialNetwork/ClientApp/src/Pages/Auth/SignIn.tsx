@@ -106,13 +106,14 @@ export default function Login() {
                                 id="Identifier"
                                 label="Username or Email"
                                 helperText={
-                                    errors?.UserName || "" + errors?.Email || ""
+                                    errors ? errors.UserName + errors.Email : ""
                                 }
                                 error={
-                                    errors?.UserName !== undefined &&
-                                    errors?.Email !== undefined &&
-                                    errors?.UserName !== "" &&
-                                    errors?.Email !== ""
+                                    errors !== undefined &&
+                                    (errors.UserName !== undefined ||
+                                        errors.Email !== undefined) &&
+                                    (errors.UserName !== "" ||
+                                        errors.Email !== "")
                                 }
                                 onChange={changeHandle}
                                 fullWidth

@@ -13,12 +13,6 @@ import { NavLink } from "react-router-dom";
 import config from "../Services/Config";
 import { RequestManager } from "../Services/RequestManager";
 
-export interface UserProps {
-    userName: string;
-    isFollowed: boolean;
-    isFollowRequested: boolean;
-}
-
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
@@ -55,10 +49,20 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
+export interface UserProps {
+    userName: string;
+    isPrivate: boolean;
+    isFollowed: boolean;
+    isFollowAccepted: boolean;
+    isFollowRequested: boolean;
+}
+
 export default function User(props: UserProps) {
     const classes = useStyles();
     let [isFollowed, setIsFollowed] = React.useState<boolean>(props.isFollowed);
-    //let [isFollowRequested, setIsFollowRequested] = React.useState<boolean>(props.isFollowRequested);
+    let [isFollowRequested, setIsFollowRequested] = React.useState<boolean>(
+        props.isFollowRequested
+    );
     const toggleFollow = (username: string) => {
         let reqMng = new RequestManager(config.apiBase);
         let action = isFollowed ? "/UnFollow/" : "/Follow/";
@@ -86,12 +90,23 @@ export default function User(props: UserProps) {
                     </ButtonBase>
                 </NavLink>
             </Grid>
-            {props.isFollowRequested ? (
+            {isFollowRequested ? (
                 <Grid item xs={3} className={classes.button}>
                     <Button
                         fullWidth
                         className={classes.acceptBtn}
                         variant="outlined"
+                        onClick={() => {
+                            let reqMng = new RequestManager(config.apiBase);
+                            reqMng.Post(
+                                "/User/AcceptFollow/" + props.userName,
+                                xhr => {
+                                    if (xhr.status === 200) {
+                                        setIsFollowRequested(false);
+                                    }
+                                }
+                            );
+                        }}
                     >
                         Accept
                     </Button>
@@ -108,7 +123,11 @@ export default function User(props: UserProps) {
                     }}
                     variant={isFollowed ? "contained" : "outlined"}
                 >
-                    {isFollowed ? "UnFollow" : "Follow"}
+                    {isFollowed
+                        ? props.isFollowAccepted || !props.isPrivate
+                            ? "UnFollow"
+                            : "Follow Requested"
+                        : "Follow"}
                 </Button>
             </Grid>
         </Grid>

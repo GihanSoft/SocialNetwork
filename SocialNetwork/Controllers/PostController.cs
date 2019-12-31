@@ -17,11 +17,11 @@ namespace SocialNetwork.Controllers
 {
     public class PostController : ControllerBase
     {
-        private readonly ILogger<HomeController> logger;
+        private readonly ILogger<PostController> logger;
         private readonly AppDbContext db;
 
         public PostController(
-            ILogger<HomeController> logger,
+            ILogger<PostController> logger,
             AppDbContext db
             )
         {
@@ -32,25 +32,39 @@ namespace SocialNetwork.Controllers
         [HttpPost]
         public async ValueTask<IActionResult> View(long? id, [FromBody]ReqVm postReq)
         {
-            if (!ModelState.IsValid && (postReq != null || id == null))
+            if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                if (postReq == null && id != null)
+                {
+                    ModelState.Remove("");
+                }
             }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var user = await db.Users.FirstOrDefaultAsync(u =>
+            var currentUser = await db.Users.FirstOrDefaultAsync(u =>
                 u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             if (id != null)
             {
                 var prePost = await db.Posts.FindAsync(id);
-                return Ok(prePost.ConvertToVm(user));
+                if (prePost.Sender.IsPrivate)
+                {
+                    var hasAccess = currentUser?.FollowedFollows?
+                        .Any(f => f.Followed == prePost.Sender && f.Accepted) ?? false ||
+                        User.IsInRole("Admin");
+                    if (!hasAccess)
+                        return Forbid();
+                }
+                return Ok(prePost.ConvertToVm(currentUser));
             }
             IEnumerable<Post> prePosts;
-            var yesterday = DateTime.Now - TimeSpan.FromDays(1);
-            if (user != null)
-                prePosts = user.Followeds.SelectMany(u => u.Posts);
-            else
-                prePosts = db.Posts.Where(p => !p.Sender.IsPrivate && p.Time > yesterday);
+            //var yesterday = DateTime.Now - TimeSpan.FromDays(1);
+            //if (currentUser != null)
+            prePosts = currentUser.FollowedFollows.Where(f => f.Accepted)
+                .Select(f => f.Followed).SelectMany(u => u.Posts);
+            //else
+            //    prePosts = db.Posts.Where(p => !p.Sender.IsPrivate && p.Time > yesterday);
             prePosts = postReq.TowardOlds ?
                 prePosts.OrderByDescending(p => p.Time) :
                 prePosts.OrderBy(p => p.Time);
@@ -59,7 +73,7 @@ namespace SocialNetwork.Controllers
                 prePosts = prePosts.SkipWhile(p => p.Id != postReq.LastGuttedId).Skip(1);
             }
             prePosts = prePosts.Take(postReq.MaxCountToGet);
-            var posts = prePosts.ConvertToVm(user);
+            var posts = prePosts.ConvertToVm(currentUser);
             return Ok(posts);
         }
         [HttpPost]
@@ -70,13 +84,14 @@ namespace SocialNetwork.Controllers
                 return BadRequest("User not found");
             var currentUser = await db.Users.FirstOrDefaultAsync(u =>
                 u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
-            if (user.IsPrivate && currentUser != null)
+            if (user.IsPrivate)
             {
-                var follow = user.FollowerFollows.FirstOrDefault(f => f.Follower == currentUser);
-                if (follow is null || !follow.Accepted)
-                {
-                    return BadRequest("User is Private");
-                }
+                var hasAccess = currentUser?.FollowedFollows?
+                        .Any(f => f.Followed == user && f.Accepted) ?? false ||
+                        User.IsInRole("Admin");
+                if (!hasAccess)
+                    return Forbid();
+
             }
             IEnumerable<Post> prePosts = user.Posts;
             prePosts = postReq.TowardOlds ?
@@ -87,19 +102,19 @@ namespace SocialNetwork.Controllers
                 prePosts = prePosts.SkipWhile(p => p.Id != postReq.LastGuttedId).Skip(1);
             }
             prePosts = prePosts.Take(postReq.MaxCountToGet);
-            var posts = prePosts.ConvertToVm(user);
+            var posts = prePosts.ConvertToVm(currentUser);
             return Ok(posts);
         }
 
         [HttpPost, Auth]
         public async ValueTask<IActionResult> Send([FromBody]PostVm post)
         {
-            var user = await db.Users.FirstOrDefaultAsync(u =>
+            var currentUser = await db.Users.FirstOrDefaultAsync(u =>
                 u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
             var postTemp = new Post
             {
                 Text = post.Text,
-                Sender = user,
+                Sender = currentUser,
                 Time = DateTime.Now
             };
             await db.AddAsync(postTemp);
@@ -112,27 +127,39 @@ namespace SocialNetwork.Controllers
         {
             if (postId is null)
                 return BadRequest();
-            var user = await db.Users.FirstOrDefaultAsync(u =>
+            var currentUser = await db.Users.FirstOrDefaultAsync(u =>
                 u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             var post = await db.Posts.FindAsync(postId);
-            var like = await db.Likes.FirstOrDefaultAsync(l => l.Liker == user && l.Post == post);
+            if (post is null)
+                return BadRequest("Post not found");
+            var like = await db.Likes.FirstOrDefaultAsync(l => l.Liker == currentUser && l.Post == post);
             if (like is null)
             {
+                if (post.Sender.IsPrivate)
+                {
+                    var hasAccess = currentUser?.FollowedFollows?
+                            .Any(f => f.Followed == post.Sender && f.Accepted) ?? false ||
+                            User.IsInRole("Admin");
+                    if (!hasAccess)
+                        return Forbid();
+
+                }
+
                 like = new Like
                 {
-                    Liker = user,
+                    Liker = currentUser,
                     Post = post
                 };
                 await db.AddAsync(like);
-                var notify = new Notification
-                {
-                    Message = $"{user.UserName} liked your post",
-                    Link = Url.Action(nameof(View), nameof(PostController), new { id = post.Id }),
-                    Time = DateTime.Now,
-                    User = post.Sender,
-                };
-                await db.AddAsync(notify);
+                //var notify = new Notification
+                //{
+                //    Message = $"{currentUser.UserName} liked your post",
+                //    Link = Url.Action(nameof(View), nameof(PostController), new { id = post.Id }),
+                //    Time = DateTime.Now,
+                //    User = post.Sender,
+                //};
+                //await db.AddAsync(notify);
                 await db.SaveChangesAsync();
             }
             return Ok(post.Likes.Count);

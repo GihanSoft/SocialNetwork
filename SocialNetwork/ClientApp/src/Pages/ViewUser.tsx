@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) =>
             flexDirection: "row",
             position: "relative",
             top: -25,
-            marginLeft: 25,
+            marginLeft: 25
             // width: 200,
             // [theme.breakpoints.down("xs")]: {
             //     width: 150
@@ -104,7 +104,7 @@ const useStyles = makeStyles((theme: Theme) =>
         EditBtn: {
             position: "absolute",
             right: "20px",
-            margin: "auto",
+            margin: "auto"
             // width: 75,
             // height: 75,
             // [theme.breakpoints.down("xs")]: {
@@ -127,7 +127,9 @@ interface UserData {
     userName: string;
     postsUrl: string;
     isFollowed: boolean;
+    isFollowAccepted: boolean;
     isFollowRequested: boolean;
+    isPrivate: boolean;
     followersCount: number;
     followingsCount: number;
 }
@@ -193,10 +195,15 @@ function ViewUserInternal() {
                         userName: userData.userName,
                         postsUrl: userData.postsUrl,
                         followersCount:
-                            userData.followersCount +
-                            (userData.isFollowed ? -1 : 1),
+                            userData.isPrivate &&
+                            (!userData.isFollowed || !userData.isFollowAccepted)
+                                ? userData.followersCount
+                                : userData.followersCount +
+                                  (userData.isFollowed ? -1 : 1),
                         followingsCount: userData.followingsCount,
                         isFollowed: !userData.isFollowed,
+                        isFollowAccepted: !userData.isPrivate,
+                        isPrivate: userData.isPrivate,
                         isFollowRequested: userData.isFollowRequested
                     };
                     gSetUserData(userData);
@@ -305,7 +312,7 @@ function ViewUserInternal() {
                     ""
                 )}
                 {authService.isSigned() === userData?.userName ? (
-                    <NavLink to='/EditUser'>
+                    <NavLink to="/EditUser">
                         <IconButton className={classes.EditBtn}>
                             <Icon
                                 path={mdiAccountEdit}
@@ -324,23 +331,34 @@ function ViewUserInternal() {
                     </Typography>
                 </Grid>
                 <Grid item xs={6} sm={3}>
-                    <NavLink to={`/user/${userData?.userName}/followers`}>
-                        <Typography
-                            variant="body1"
-                            className={classes.gridItem}
-                        >
-                            followers: {userData && userData.followersCount}
-                        </Typography>
+                    <NavLink
+                        style={{ textDecoration: "none" }}
+                        to={`/user/${userData?.userName}/followers`}
+                    >
+                        <ButtonBase style={{ width: "100%" }}>
+                            <Typography
+                                variant="body1"
+                                className={classes.gridItem}
+                            >
+                                followers: {userData && userData.followersCount}
+                            </Typography>
+                        </ButtonBase>
                     </NavLink>
                 </Grid>
                 <Grid item xs={6} sm={3}>
-                    <NavLink to={`/user/${userData?.userName}/followings`}>
-                        <Typography
-                            variant="body1"
-                            className={classes.gridItem}
-                        >
-                            followings: {userData && userData.followingsCount}
-                        </Typography>
+                    <NavLink
+                        style={{ textDecoration: "none" }}
+                        to={`/user/${userData?.userName}/followings`}
+                    >
+                        <ButtonBase style={{ width: "100%" }}>
+                            <Typography
+                                variant="body1"
+                                className={classes.gridItem}
+                            >
+                                followings:{" "}
+                                {userData && userData.followingsCount}
+                            </Typography>
+                        </ButtonBase>
                     </NavLink>
                 </Grid>
                 {authService.isSigned() !== userData?.userName ? (
@@ -358,7 +376,9 @@ function ViewUserInternal() {
                             }
                         >
                             {userData && userData.isFollowed
-                                ? "UnFollow"
+                                ? userData.isFollowAccepted
+                                    ? "UnFollow"
+                                    : "Follow Requested"
                                 : "Follow"}
                         </Button>
                     </Grid>

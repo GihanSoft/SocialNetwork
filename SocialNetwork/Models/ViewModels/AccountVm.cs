@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SocialNetwork.EfCore;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SocialNetwork.Models.ViewModels
 {
-    public class AccountVm
+    public class AccountVm : EntityBase<int>
     {
         [StringLength(450, MinimumLength = 4)]
         public string UserName { get; set; }

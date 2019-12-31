@@ -44,7 +44,9 @@ function UserListInternal(props: { url: string }) {
                             <User
                                 key={index}
                                 userName={user.userName}
+                                isPrivate={user.isPrivate}
                                 isFollowed={user.isFollowed}
+                                isFollowAccepted={user.isFollowAccepted}
                                 isFollowRequested={user.isFollowRequested}
                             />
                         </ListItem>

@@ -71,7 +71,7 @@ const editUser = async () => {
         window.location.assign("/SignIn");
         return;
     } else {
-        if (response.status == 400) {
+        if (response.status === 400) {
             let modelState: { [key: string]: string[] } = await response.json();
             let errors: loginData = {
                 userName: "",

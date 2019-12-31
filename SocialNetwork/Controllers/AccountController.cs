@@ -61,7 +61,7 @@ namespace SocialNetwork.Controllers
                     ModelState.AddModelError(nameof(AccountVm.Password), "UserName or Password mismatch");
                 }
                 if (!user.IsActive)
-                    return BadRequest("user is deactived");
+                    ModelState.AddModelError(nameof(AccountVm.UserName), "user is deactivated");
             }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -136,7 +136,7 @@ namespace SocialNetwork.Controllers
             {
                 if (hasher.Hash(account.OldPassword) != currentUser.PasswordHash)
                     ModelState.AddModelError("OldPassword", "Old Password mismatch");
-                
+
                 if (ModelState.IsValid)
                     currentUser.PasswordHash = hasher.Hash(account.Password);
             }
