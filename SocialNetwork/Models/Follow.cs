@@ -8,7 +8,6 @@ namespace SocialNetwork.Models
     public class Follow : EntityBase
     {
         public bool Accepted { get; set; }
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime Time { get; set; }
         [Required]
         public virtual User Follower { get; set; }

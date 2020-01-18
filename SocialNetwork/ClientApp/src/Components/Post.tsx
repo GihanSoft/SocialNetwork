@@ -31,7 +31,8 @@ import {
     mdiDotsVertical,
     mdiStar,
     mdiStarOutline,
-    mdiDelete /*mdiPencil*/
+    mdiDelete,
+    mdiCommentOutline
 } from "@mdi/js";
 import { yellow, blueGrey } from "@material-ui/core/colors";
 import { useHistory } from "react-router";
@@ -78,7 +79,7 @@ export interface PostProps {
     time: string;
     liked?: boolean;
     likesCount: number;
-    avatar?: string;
+    commentCount: number;
 }
 
 export default function Post(props: PostProps) {
@@ -116,7 +117,13 @@ export default function Post(props: PostProps) {
                         to={"/user/" + props.sender}
                         style={{ textDecoration: "none" }}
                     >
-                        <ButtonBase style={{width:'100%', display:'flex', justifyContent:'start'}}>
+                        <ButtonBase
+                            style={{
+                                width: "100%",
+                                display: "flex",
+                                justifyContent: "start"
+                            }}
+                        >
                             <Typography variant="h6">{props.sender}</Typography>
                         </ButtonBase>
                     </NavLink>
@@ -235,6 +242,11 @@ export default function Post(props: PostProps) {
                     />
                 </IconButton>
                 <Typography variant="body1">{likeCount}</Typography>
+                <span style={{marginLeft:20}}></span>
+                <IconButton>
+                    <Icon path={mdiCommentOutline} size={1} />
+                </IconButton>
+                <Typography variant="body1">{props.commentCount}</Typography>
             </CardActions>
         </Card>
     );

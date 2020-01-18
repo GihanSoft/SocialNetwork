@@ -9,13 +9,7 @@ namespace SocialNetwork.Models
         public byte[] Avatar { get; set; }
         public bool IsPrivate { get; set; }
 
-        [NotMapped]
-        public IEnumerable<User> Followers => FollowerFollows.Select(f => f.Follower);
-        [NotMapped]
-        public IEnumerable<User> Followeds => FollowedFollows.Select(f => f.Followed);
-
-        public virtual ICollection<Follow> FollowerFollows
-        { get; set; }
+        public virtual ICollection<Follow> FollowerFollows { get; set; }
         public virtual ICollection<Follow> FollowedFollows { get; set; }
 
         public virtual ICollection<Like> Likes { get; set; }

@@ -74,22 +74,22 @@ namespace SocialNetwork.Controllers
         public async ValueTask<IActionResult> SignUp([FromBody]AccountVm account)
         {
             if (account is null) return BadRequest("empty body");
-            var user = await db.Users.FirstOrDefaultAsync(u =>
+            var users = db.Users.Where(u =>
                 u.UserName == account.UserName ||
                 u.Email == account.Email ||
                 u.MobileNumber == account.Mobile);
-            if (user != null)
+            if (users.Any())
             {
-                if (user.UserName == account.UserName)
+                if (users.Any(u => u.UserName == account.UserName))
                     ModelState.AddModelError("UserName", "UserName name had taken");
-                if (user.Email == account.Email)
+                if (users.Any(u => u.Email == account.Email))
                     ModelState.AddModelError("Email", "Email had taken");
-                if (user.MobileNumber == account.Mobile)
+                if (users.Any(u => u.MobileNumber == account.Mobile))
                     ModelState.AddModelError("Mobile", "Mobile had taken");
             }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            user = new User
+            var user = new User
             {
                 UserName = account.UserName.ToLower(),
                 Email = account.Email.ToLower(),
@@ -99,7 +99,7 @@ namespace SocialNetwork.Controllers
                 IsActive = true,
             };
 
-            await db.AddAsync(user);
+            await db.AddAsync(users);
             await db.AddAsync(new Follow
             {
                 Followed = user,
@@ -119,17 +119,16 @@ namespace SocialNetwork.Controllers
             var currentUser = await db.Users.FirstOrDefaultAsync(u =>
                 u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
             var users = db.Users.Where(u =>
-                u.UserName == account.UserName ||
+                (u.UserName == account.UserName ||
                 u.Email == account.Email ||
-                u.MobileNumber == account.Mobile);
-            var user = users.FirstOrDefault();
-            if (user != null && user != currentUser)
+                u.MobileNumber == account.Mobile) && u != currentUser);
+            if (users.Any())
             {
-                if (user.UserName == account.UserName)
+                if (users.Any(u => u.UserName == account.UserName))
                     ModelState.AddModelError("UserName", "UserName name had taken");
-                if (user.Email == account.Email)
+                if (users.Any(u => u.Email == account.Email))
                     ModelState.AddModelError("Email", "Email had taken");
-                if (user.MobileNumber == account.Mobile)
+                if (users.Any(u => u.MobileNumber == account.Mobile))
                     ModelState.AddModelError("Mobile", "Mobile had taken");
             }
             if (!string.IsNullOrEmpty(account.OldPassword))
@@ -156,26 +155,26 @@ namespace SocialNetwork.Controllers
             currentUser.IsPrivate = account.IsPrivate;
 
             db.Update(currentUser);
-            db.SaveChanges();
-            return Ok();
-        }
-
-
-        [HttpPost, Auth("Admin")]
-        public async ValueTask<IActionResult> DeactiveUser([FromBody]AccountVm account)
-        {
-            if (!ModelState.IsValid || account.UserName is null)
-                return BadRequest(ModelState);
-
-            var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == account.UserName);
-            if (user is null)
-                return BadRequest("user is not exist");
-
-            user.IsActive = false;
-            db.Update(user);
             await db.SaveChangesAsync();
-            logger.LogInformation("user deactivated");
             return Ok();
         }
+
+
+        //[HttpPost, Auth("Admin")]
+        //public async ValueTask<IActionResult> DeactiveUser([FromBody]AccountVm account)
+        //{
+        //    if (!ModelState.IsValid || account.UserName is null)
+        //        return BadRequest(ModelState);
+
+        //    var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == account.UserName);
+        //    if (user is null)
+        //        return BadRequest("user is not exist");
+
+        //    user.IsActive = false;
+        //    db.Update(user);
+        //    await db.SaveChangesAsync();
+        //    logger.LogInformation("user deactivated");
+        //    return Ok();
+        //}
     }
 }

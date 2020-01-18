@@ -19,17 +19,14 @@ namespace SocialNetwork.Controllers
     {
         private readonly ILogger<UserController> logger;
         private readonly AppDbContext db;
-        private readonly IHasher hasher;
 
         public UserController(
             ILogger<UserController> logger,
-            AppDbContext db,
-            IHasher hasher
+            AppDbContext db
             )
         {
             this.logger = logger;
             this.db = db;
-            this.hasher = hasher;
         }
 
         [HttpPost("API/User/{id}")]
@@ -58,27 +55,6 @@ namespace SocialNetwork.Controllers
             return Ok(userVm);
         }
 
-        //[HttpPost, Auth]
-        //public async ValueTask<IActionResult> Edit([FromBody] AccountVm account)
-        //{
-        //    if (!ModelState.IsValid)
-        //        return BadRequest(ModelState);
-        //    var user = await db.Users.FirstOrDefaultAsync(u =>
-        //        u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
-        //    if (account.OldPassword != null)
-        //    {
-        //        if (hasher.Hash(account.OldPassword) != user.PasswordHash)
-        //            BadRequest("Old Password mismatch");
-        //        user.PasswordHash = hasher.Hash(account.Password);
-        //    }
-        //    user.Email = account.Email;
-        //    user.MobileNumber = account.Mobile;
-        //    user.IsPrivate = account.IsPrivate;
-        //    db.Update(user);
-        //    await db.SaveChangesAsync();
-        //    return Ok();
-        //}
-
         [HttpGet]
         public async ValueTask<IActionResult> Avatar(string id)
         {
@@ -86,16 +62,6 @@ namespace SocialNetwork.Controllers
                id.EndsWith("PNG", System.StringComparison.OrdinalIgnoreCase))
                 id = id[0..^4];
             var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == id);
-            if (user.IsPrivate)
-            {
-                var currentUser = await db.Users.FirstOrDefaultAsync(u =>
-                    u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
-                var hasAccess = currentUser?.FollowedFollows?
-                    .Any(f => f.Followed == user && f.Accepted) ?? false ||
-                    User.IsInRole("Admin");
-                if (!hasAccess)
-                    return Forbid();
-            }
             if (user.Avatar is null)
             {
                 return NoContent();
@@ -206,8 +172,8 @@ namespace SocialNetwork.Controllers
                     return Forbid();
                 var preUser = await db.Users.FirstOrDefaultAsync(u => u.UserName == username);
                 preUsers = follower ?
-                    preUser.Followers :
-                    preUser.Followeds;
+                    preUser.FollowerFollows.Select(f => f.Follower) :
+                    preUser.FollowedFollows.Select(f => f.Followed);
             }
 
             if (username != null)

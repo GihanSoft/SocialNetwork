@@ -10,6 +10,7 @@ import SignOut from "./Pages/Auth/SignOut";
 import ViewPost from "./Pages/ViewPost";
 import Search from "./Pages/Search";
 import EditUser from "./Pages/Auth/EditUser";
+import authService from "./Services/AuthorizeService";
 
 const baseUrl: string =
     document.getElementsByTagName("base")[0].getAttribute("href") || "";
@@ -17,12 +18,17 @@ const baseUrl: string =
 export default function App(props: any) {
     // new RequestManager(window.location.origin.split(':')[0])
     //     .Get(new URL('API/Layout/Index'), undefined, undefined, sender => { })
+    let isSigned = authService.isSigned();
     return (
         <>
             <BrowserRouter basename={baseUrl}>
                 <Layout>
                     <Route exact path="/">
-                        <PostList url="/API/Post/View" />
+                        {isSigned ? (
+                            <PostList url="/API/Post/View" />
+                        ) : (
+                            <PostList url="/API/Post/Trends" />
+                        )}
                     </Route>
                     <Route path="/SignIn">
                         <SignIn />
@@ -42,13 +48,13 @@ export default function App(props: any) {
                     <Route path="/user">
                         <ViewUser />
                     </Route>
-                    <Route path='/EditUser'>
+                    <Route path="/EditUser">
                         <EditUser />
                     </Route>
                     <Route path="/search">
                         <Search />
                     </Route>
-                    <Route path='/'>
+                    <Route path="/">
                         <></>
                     </Route>
                 </Layout>

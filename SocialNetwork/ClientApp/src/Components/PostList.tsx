@@ -27,6 +27,9 @@ const getPosts = async (
         },
         body: JSON.stringify(data)
     });
+    if (response.status === 401) {
+        
+    }
     if (!response.ok) return [];
     let posts = await response.json();
     return posts;
@@ -74,11 +77,11 @@ function PostListViewer(props: PostListProps) {
                         key={p.id}
                         id={p.id}
                         sender={p.sender}
-                        avatar={p.avatar}
                         likesCount={p.likesCount}
                         liked={p.liked}
                         time={p.time}
                         text={p.text}
+                        commentCount={p.commentCount}
                     />
                 ))
             // : (<Skeleton width='80%' height='200px' />)}

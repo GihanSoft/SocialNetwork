@@ -20,7 +20,7 @@ import UserList from "../Components/UserList";
 import { NavLink } from "react-router-dom";
 import config from "../Services/Config";
 import Icon from "@mdi/react";
-import { mdiCamera, mdiAccountEdit } from "@mdi/js";
+import { mdiCamera, mdiAccountEdit, mdiLockOutline } from "@mdi/js";
 import authService from "../Services/AuthorizeService";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -48,6 +48,13 @@ const useStyles = makeStyles((theme: Theme) =>
             [theme.breakpoints.down("xs")]: {
                 width: 75,
                 height: 75
+            }
+        },
+        hugeAvatarIcon: {
+            position: "relative",
+            top: -100,
+            [theme.breakpoints.down("xs")]: {
+                top: -75
             }
         },
         cameraP: {
@@ -227,6 +234,14 @@ function ViewUserInternal() {
                         src={avatarUrl}
                         alt={userData ? userData.userName[0].toUpperCase() : ""}
                     ></Avatar>
+                    {userData?.isPrivate && !userData.isFollowAccepted ? (
+                        <Icon
+                            className={classes.hugeAvatarIcon}
+                            path={mdiLockOutline}
+                        />
+                    ) : (
+                        ""
+                    )}
                 </Link>
                 <div
                     style={{
@@ -333,7 +348,11 @@ function ViewUserInternal() {
                 <Grid item xs={6} sm={3}>
                     <NavLink
                         style={{ textDecoration: "none" }}
-                        to={`/user/${userData?.userName}/followers`}
+                        to={
+                            !userData?.isPrivate || userData.isFollowAccepted
+                                ? `/user/${userData?.userName}/followers`
+                                : "#"
+                        }
                     >
                         <ButtonBase style={{ width: "100%" }}>
                             <Typography
@@ -348,7 +367,11 @@ function ViewUserInternal() {
                 <Grid item xs={6} sm={3}>
                     <NavLink
                         style={{ textDecoration: "none" }}
-                        to={`/user/${userData?.userName}/followings`}
+                        to={
+                            !userData?.isPrivate || userData.isFollowAccepted
+                                ? `/user/${userData?.userName}/followings`
+                                : "#"
+                        }
                     >
                         <ButtonBase style={{ width: "100%" }}>
                             <Typography
@@ -386,7 +409,11 @@ function ViewUserInternal() {
                     ""
                 )}
             </Grid>
-            <PostList url={(userData || { postsUrl: "" }).postsUrl || ""} />
+            {!userData?.isPrivate || userData.isFollowAccepted ? (
+                <PostList url={userData?.postsUrl || ""} />
+            ) : (
+                ""
+            )}
         </>
     );
 }

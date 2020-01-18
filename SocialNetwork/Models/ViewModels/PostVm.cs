@@ -11,8 +11,9 @@ namespace SocialNetwork.Models.ViewModels
         public string Sender { get; set; }
         public string Text { get; set; }
         public DateTime Time { get; set; }
-        public long LikesCount { get; set; }
         public bool Liked { get; set; }
+        public long LikesCount { get; set; }
+        public long CommentCount { get; set; }
     }
 
     public static class PostVmEx
@@ -26,7 +27,8 @@ namespace SocialNetwork.Models.ViewModels
                 Text = post.Text,
                 Time = post.Time,
                 Liked = user is null ? false : post.Likes.Any(l => l.Liker.Id == user.Id),
-                LikesCount = post.Likes.Count
+                LikesCount = post.Likes.Count,
+                CommentCount = post.Comments.Count
             };
             return postVm;
         }
