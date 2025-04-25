@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29509.3
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialNetwork", "SocialNetwork\SocialNetwork.csproj", "{66ABBBBD-222C-47ED-BB02-C29074035781}"
 EndProject
@@ -10,6 +10,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gihan.Security.Cryptography", "Gihan.Security.Cryptography\Gihan.Security.Cryptography.csproj", "{A28CA133-E1F6-49AD-8B62-79D320DCEEFA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gihan.EfCore", "Gihan.EfCore\Gihan.EfCore.csproj", "{8BAB37D4-4D7F-4659-91F2-CCACAA08105B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "[root]", "[root]", "{75783A57-B95A-42BC-921F-AA0AE9D591AE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{17157DF5-FC0D-4A7B-B5D9-D4B9567AB3DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +42,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{66ABBBBD-222C-47ED-BB02-C29074035781} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{3F1C90D3-BACA-491B-9026-8CE7F94F1322} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{A28CA133-E1F6-49AD-8B62-79D320DCEEFA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{8BAB37D4-4D7F-4659-91F2-CCACAA08105B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6C6EDB59-EB41-4E1E-AE3F-E891357B1F74}
