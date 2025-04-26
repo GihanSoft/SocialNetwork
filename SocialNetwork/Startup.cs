@@ -1,96 +1,53 @@
 using System;
-using SocialNetwork.Identity;
-using SocialNetwork.Security.Cryptography;
+
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 using SocialNetwork.Data;
+using SocialNetwork.Identity;
 using SocialNetwork.Models;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 
-namespace SocialNetwork
+using SocialNetwork.Security.Cryptography;
+
+const string DefaultConnectionName = "DefaultConnection";
+
+var builder = WebApplication.CreateBuilder();
+
+builder.AddServiceDefaults();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString(DefaultConnectionName)));
+
+builder.Services.AddJwtIdentity<AppDbContext, User>(new JwtIdentityOptions
 {
-    public class Startup
-    {
-        public const string DefaultConnectionName = "DefaultConnection";
+    SecretKey = "secret key for JWT",
+    ValidityTime = TimeSpan.FromDays(32)
+}, new CryptographyOptions
+{
+    Password = "secret password for JWT",
+});
 
-        public IConfiguration Configuration { get; }
+builder.Services.AddControllers();
 
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+var app = builder.Build();
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString(DefaultConnectionName)));
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
-            services.AddJwtIdentity<AppDbContext, User>(new JwtIdentityOptions
-            {
-                SecretKey = "secret key for JWT",
-                ValidityTime = TimeSpan.FromDays(32)
-            }, new CryptographyOptions
-            {
-                Password = "secret password for JWT",
-            });
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 
-            services.AddControllers();
-            services.AddSpaStaticFiles(configuration =>
-            {
-                configuration.RootPath = "ClientApp/build";
-            });
-        }
+app.UseEndpoints(_ => { });
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseHsts();
-            }
+app.UseSpa(spa => spa.UseProxyToSpaDevelopmentServer(app.Configuration["services:ui:http:0"]));
 
-            app.UseCors(c =>
-            {
-                c.AllowAnyOrigin();
-                c.AllowAnyHeader();
-            });
+app.MapDefaultEndpoints();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "API/{controller=Home}/{action=Index}/{id?}");
 
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-            app.UseSpaStaticFiles();
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "API/{controller}/{action}/{id?}");
-                //endpoints.MapRazorPages();
-            });
-
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
-
-                if (env.IsDevelopment())
-                {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
-                }
-            });
-        }
-    }
-}
+app.Run();

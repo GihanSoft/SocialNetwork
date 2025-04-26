@@ -17,6 +17,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "[root]", "[root]", "{75783A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{17157DF5-FC0D-4A7B-B5D9-D4B9567AB3DC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialNetwork.AppHost", "aspire\SocialNetwork.AppHost\SocialNetwork.AppHost.csproj", "{085AFAED-5F4A-4A1E-8743-310E96AC787A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialNetwork.ServiceDefaults", "aspire\SocialNetwork.ServiceDefaults\SocialNetwork.ServiceDefaults.csproj", "{517C9594-F0EF-2CDA-2DD8-0C673AA44355}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{8BAB37D4-4D7F-4659-91F2-CCACAA08105B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8BAB37D4-4D7F-4659-91F2-CCACAA08105B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8BAB37D4-4D7F-4659-91F2-CCACAA08105B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{085AFAED-5F4A-4A1E-8743-310E96AC787A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{085AFAED-5F4A-4A1E-8743-310E96AC787A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{085AFAED-5F4A-4A1E-8743-310E96AC787A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{085AFAED-5F4A-4A1E-8743-310E96AC787A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{517C9594-F0EF-2CDA-2DD8-0C673AA44355}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{517C9594-F0EF-2CDA-2DD8-0C673AA44355}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{517C9594-F0EF-2CDA-2DD8-0C673AA44355}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{517C9594-F0EF-2CDA-2DD8-0C673AA44355}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,6 +60,8 @@ Global
 		{3F1C90D3-BACA-491B-9026-8CE7F94F1322} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{A28CA133-E1F6-49AD-8B62-79D320DCEEFA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{8BAB37D4-4D7F-4659-91F2-CCACAA08105B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{085AFAED-5F4A-4A1E-8743-310E96AC787A} = {17157DF5-FC0D-4A7B-B5D9-D4B9567AB3DC}
+		{517C9594-F0EF-2CDA-2DD8-0C673AA44355} = {17157DF5-FC0D-4A7B-B5D9-D4B9567AB3DC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6C6EDB59-EB41-4E1E-AE3F-E891357B1F74}
