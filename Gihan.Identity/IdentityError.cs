@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Gihan.Identity;
+﻿namespace Gihan.Identity;
 
 /// <summary>
 /// Encapsulates an error from the identity subsystem.

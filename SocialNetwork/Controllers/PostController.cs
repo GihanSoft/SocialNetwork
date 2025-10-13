@@ -16,19 +16,9 @@ using SocialNetwork.Models.ViewModels;
 
 namespace SocialNetwork.Controllers;
 
-public class PostController : ControllerBase
+public class PostController(AppDbContext _db) : ControllerBase
 {
-    private readonly ILogger<PostController> logger;
-    private readonly AppDbContext db;
-
-    public PostController(
-        ILogger<PostController> logger,
-        AppDbContext db
-        )
-    {
-        this.logger = logger;
-        this.db = db;
-    }
+    private readonly AppDbContext _db = _db;
 
     [HttpPost, Auth]
     public async ValueTask<IActionResult> View(long? id, [FromBody]ReqVm postReq)
@@ -40,24 +30,31 @@ public class PostController : ControllerBase
                 ModelState.Remove("");
             }
         }
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
 
-        var currentUser = await db.Users.FirstOrDefaultAsync(u =>
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
 
         if (id != null)
         {
-            var prePost = await db.Posts.FindAsync(id);
+            var prePost = await _db.Posts.FindAsync(id);
             if (prePost.Sender.IsPrivate)
             {
                 var hasAccess = (currentUser?.FollowedFollows?.Any(f => f.Followed == prePost.Sender && f.Accepted) ?? false) ||
                     User.IsInRole("Admin");
                 if (!hasAccess)
+                {
                     return Forbid();
+                }
             }
+
             return Ok(prePost.ConvertToVm(currentUser));
         }
+
         IEnumerable<Post> prePosts;
         prePosts = currentUser.FollowedFollows.Where(f => f.Accepted)
             .Select(f => f.Followed).SelectMany(u => u.Posts).Where(p => p.Parent == null);
@@ -68,6 +65,7 @@ public class PostController : ControllerBase
         {
             prePosts = prePosts.SkipWhile(p => p.Id != postReq.LastGuttedId).Skip(1);
         }
+
         prePosts = prePosts.Take(postReq.MaxCountToGet);
         var posts = prePosts.ConvertToVm(currentUser);
         return Ok(posts);
@@ -76,19 +74,24 @@ public class PostController : ControllerBase
     [HttpPost]
     public async ValueTask<IActionResult> UserPosts(string id, [FromBody]ReqVm postReq)
     {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == id);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserName == id);
         if (user == null || !ModelState.IsValid)
+        {
             return BadRequest("User not found");
-        var currentUser = await db.Users.FirstOrDefaultAsync(u =>
+        }
+
+        var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
         if (user.IsPrivate)
         {
             var hasAccess = (currentUser?.FollowedFollows?.Any(f => f.Followed == user && f.Accepted) ?? false) ||
-                    User.IsInRole("Admin");
+                User.IsInRole("Admin");
             if (!hasAccess)
+            {
                 return Forbid();
-
+            }
         }
+
         IEnumerable<Post> prePosts = user.Posts;
         prePosts = postReq.TowardOlds ?
             prePosts.OrderByDescending(p => p.Time) :
@@ -97,6 +100,7 @@ public class PostController : ControllerBase
         {
             prePosts = prePosts.SkipWhile(p => p.Id != postReq.LastGuttedId).Skip(1);
         }
+
         prePosts = prePosts.Take(postReq.MaxCountToGet);
         var posts = prePosts.ConvertToVm(currentUser);
         return Ok(posts);
@@ -106,11 +110,14 @@ public class PostController : ControllerBase
     public async ValueTask<IActionResult> Trends([FromBody]ReqVm postReq)
     {
         if (!ModelState.IsValid)
+        {
             return BadRequest(ModelState);
-        var currentUser = await db.Users.FirstOrDefaultAsync(u =>
+        }
+
+        var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
         IEnumerable<Post> prePosts;
-        prePosts = db.Posts.Where(p =>
+        prePosts = _db.Posts.Where(p =>
             p.Parent == null &&
             (!p.Sender.IsPrivate || 
                 p.Sender.FollowerFollows.Any(f => f.Follower == currentUser && f.Accepted)
@@ -124,6 +131,7 @@ public class PostController : ControllerBase
         {
             prePosts = prePosts.SkipWhile(p => p.Id != postReq.LastGuttedId).Skip(1);
         }
+
         prePosts = prePosts.Take(postReq.MaxCountToGet);
         var posts = prePosts.ConvertToVm(currentUser);
         return Ok(posts);
@@ -133,20 +141,29 @@ public class PostController : ControllerBase
     public async ValueTask<IActionResult> PostComments(long id, [FromBody]ReqVm postReq)
     {
         if (!ModelState.IsValid)
+        {
             return BadRequest(ModelState);
-        var currentUser = await db.Users.FirstOrDefaultAsync(u =>
+        }
+
+        var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
         if (id == default)
+        {
             return BadRequest();
-        var post = await db.Posts.FindAsync(id);
+        }
+
+        var post = await _db.Posts.FindAsync(id);
         if (post == default)
+        {
             return BadRequest();
         }
 
         var hasAccess = (currentUser?.FollowedFollows?.Any(f => f.Followed == post.Sender && f.Accepted) ?? false) ||
             User.IsInRole("Admin");
         if (!hasAccess)
+        {
             return Forbid();
+        }
 
         IEnumerable<Post> prePosts = post.Comments;
         prePosts = postReq.TowardOlds ?
@@ -156,6 +173,7 @@ public class PostController : ControllerBase
         {
             prePosts = prePosts.SkipWhile(p => p.Id != postReq.LastGuttedId).Skip(1);
         }
+
         prePosts = prePosts.Take(postReq.MaxCountToGet);
         var posts = prePosts.ConvertToVm(currentUser);
         return Ok(posts);
@@ -164,18 +182,30 @@ public class PostController : ControllerBase
     public async ValueTask<IActionResult> SendComment(long id, [FromBody]PostVm post)
     {
         if (!ModelState.IsValid)
+        {
             return BadRequest(ModelState);
+        }
+
         if (id == default)
+        {
             return BadRequest();
-        var superPost = await db.Posts.FindAsync(id);
+        }
+
+        var superPost = await _db.Posts.FindAsync(id);
         if (superPost == default)
+        {
             return BadRequest();
-        var currentUser = await db.Users.FirstOrDefaultAsync(u =>
+        }
+
+        var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
         var hasAccess = (currentUser?.FollowedFollows?.Any(f => f.Followed == superPost.Sender && f.Accepted) ?? false) ||
             User.IsInRole("Admin");
         if (!hasAccess)
+        {
             return Forbid();
+        }
+
         var postTemp = new Post
         {
             Text = post.Text,
@@ -183,15 +213,15 @@ public class PostController : ControllerBase
             Time = DateTime.Now,
             Parent = superPost
         };
-        await db.AddAsync(postTemp);
-        await db.SaveChangesAsync();
+        await _db.AddAsync(postTemp);
+        await _db.SaveChangesAsync();
         return Ok();
     }
 
     [HttpPost, Auth]
     public async ValueTask<IActionResult> Send([FromBody]PostVm post)
     {
-        var currentUser = await db.Users.FirstOrDefaultAsync(u =>
+        var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
         var postTemp = new Post
         {
@@ -199,8 +229,8 @@ public class PostController : ControllerBase
             Sender = currentUser,
             Time = DateTime.Now
         };
-        await db.AddAsync(postTemp);
-        await db.SaveChangesAsync();
+        await _db.AddAsync(postTemp);
+        await _db.SaveChangesAsync();
         return Ok();
     }
 
@@ -208,14 +238,20 @@ public class PostController : ControllerBase
     public async ValueTask<IActionResult> Like([FromBody]long? postId)
     {
         if (postId is null)
+        {
             return BadRequest();
-        var currentUser = await db.Users.FirstOrDefaultAsync(u =>
+        }
+
+        var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-        var post = await db.Posts.FindAsync(postId);
+        var post = await _db.Posts.FindAsync(postId);
         if (post is null)
+        {
             return BadRequest("Post not found");
-        var like = await db.Likes.FirstOrDefaultAsync(l => l.Liker == currentUser && l.Post == post);
+        }
+
+        var like = await _db.Likes.FirstOrDefaultAsync(l => l.Liker == currentUser && l.Post == post);
         if (like is null)
         {
             if (post.Sender.IsPrivate)
@@ -223,8 +259,9 @@ public class PostController : ControllerBase
                 var hasAccess = (currentUser?.FollowedFollows?.Any(f => f.Followed == post.Sender && f.Accepted) ?? false) ||
                         User.IsInRole("Admin");
                 if (!hasAccess)
+                {
                     return Forbid();
-
+                }
             }
 
             like = new Like
@@ -232,7 +269,7 @@ public class PostController : ControllerBase
                 Liker = currentUser,
                 Post = post
             };
-            await db.AddAsync(like);
+            await _db.AddAsync(like);
             //var notify = new Notification
             //{
             //    Message = $"{currentUser.UserName} liked your post",
@@ -241,8 +278,9 @@ public class PostController : ControllerBase
             //    User = post.Sender,
             //};
             //await db.AddAsync(notify);
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
         }
+
         return Ok(post.Likes.Count);
     }
 
@@ -250,17 +288,21 @@ public class PostController : ControllerBase
     public async ValueTask<IActionResult> RemoveLike([FromBody]long? postId)
     {
         if (postId is null)
+        {
             return BadRequest();
-        var user = await db.Users.FirstOrDefaultAsync(u =>
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-        var post = await db.Posts.FindAsync(postId);
-        var like = await db.Likes.FirstOrDefaultAsync(l => l.Liker == user && l.Post == post);
+        var post = await _db.Posts.FindAsync(postId);
+        var like = await _db.Likes.FirstOrDefaultAsync(l => l.Liker == user && l.Post == post);
         if (like != null)
         {
-            db.Remove(like);
-            await db.SaveChangesAsync();
+            _db.Remove(like);
+            await _db.SaveChangesAsync();
         }
+
         return Ok(post.Likes.Count);
     }
 
@@ -268,18 +310,25 @@ public class PostController : ControllerBase
     public async ValueTask<IActionResult> Delete([FromBody]long? postId)
     {
         if (postId is null)
+        {
             return BadRequest();
-        var post = await db.Posts.FindAsync(postId);
+        }
+
+        var post = await _db.Posts.FindAsync(postId);
         if (post == null)
+        {
             return Ok();
-        var user = await db.Users.FirstOrDefaultAsync(u =>
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
         if (post.Sender != user && !User.IsInRole("admin"))
         {
             return Forbid();
         }
-        db.Remove(post);
-        await db.SaveChangesAsync();
+
+        _db.Remove(post);
+        await _db.SaveChangesAsync();
         return Ok();
     }
 

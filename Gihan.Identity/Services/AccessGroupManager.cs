@@ -54,6 +54,7 @@ public class AccessGroupManager<TUser> : IAccessGroupManager<TUser> where TUser 
         {
             throw new ArgumentNullException(nameof(group));
         }
+
         db.Roles.Remove(group);
         await db.SaveChangesAsync();
         return IdentityResult.Success;
@@ -74,9 +75,15 @@ public class AccessGroupManager<TUser> : IAccessGroupManager<TUser> where TUser 
     {
         Role resultGroup = null;
         if (resultGroup == null && group.Id != default)
+        {
             resultGroup = await db.Roles.FindAsync(group.Id);
+        }
+
         if (resultGroup == null && group.Name != null)
+        {
             resultGroup = await db.Roles.FirstOrDefaultAsync(g => g.Name == group.Name);
+        }
+
         return resultGroup;
     }
 
@@ -89,8 +96,7 @@ public class AccessGroupManager<TUser> : IAccessGroupManager<TUser> where TUser 
             user.Id != default ? memebership.UserId == user.Id :
             user.UserName != null ? memebership.User.UserName == user.UserName :
             user.Email != null ? memebership.User.Email == user.Email :
-            user.MobileNumber != null ?
-            memebership.User.MobileNumber == user.MobileNumber : false);
+            user.MobileNumber != null && memebership.User.MobileNumber == user.MobileNumber);
     }
 
     #region IDisposable Support

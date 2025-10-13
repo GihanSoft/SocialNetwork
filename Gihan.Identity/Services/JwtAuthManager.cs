@@ -48,9 +48,15 @@ public class JwtAuthManager<TUser> : IJwtAuthManager<TUser>
     public async ValueTask<string> CreateJwtTokenAsync(TUser user, string displayName = null)
     {
         if (user.Id == default)
+        {
             user = await _userManager.FindAsync(user);
+        }
+
         if (user is null || user.Id == default)
+        {
             throw new Exception("user not found");
+        }
+
         if (!_identityOptions.AllowMultipleLogins)
         {
             if (_jwtIdentityDb.AccessTokens.ToArray().Any(token => token.UserId == user.Id))
@@ -58,6 +64,7 @@ public class JwtAuthManager<TUser> : IJwtAuthManager<TUser>
                 throw new Exception("this user has logged in before");
             }
         }
+
         var accessToken = new AccessToken()
         {
             Id = Guid.NewGuid(),
@@ -80,7 +87,10 @@ public class JwtAuthManager<TUser> : IJwtAuthManager<TUser>
             new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.Now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64, issuer),
         };
         if (displayName != null)
+        {
             claims.Add(new Claim(ClaimTypes.Name, displayName, ClaimTypes.Name, issuer));
+        }
+
         claims.AddRange(_jwtIdentityDb.UserRoles
             .Where(ur => ur.UserId == user.Id)
             .Select(ur => new Claim(ClaimTypes.Role, ur.Role.Name)));
@@ -131,6 +141,7 @@ public class JwtAuthManager<TUser> : IJwtAuthManager<TUser>
                 _jwtIdentityDb.Remove(token);
                 await _jwtIdentityDb.SaveChangesAsync();
             }
+
             context.Fail("Token is not valid");
         }
 

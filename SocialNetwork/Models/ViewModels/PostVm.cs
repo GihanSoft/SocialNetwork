@@ -28,7 +28,7 @@ public static class PostVmEx
             Sender = post.Sender.UserName,
             Text = post.Text,
             Time = post.Time,
-            Liked = user is null ? false : post.Likes.Any(l => l.Liker.Id == user.Id),
+            Liked = user is not null && post.Likes.Any(l => l.Liker.Id == user.Id),
             LikesCount = post.Likes.Count,
             CommentCount = post.Comments.Count
         };

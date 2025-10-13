@@ -19,25 +19,28 @@ namespace SocialNetwork.Controllers;
 
 public class UserController : ControllerBase
 {
-    private readonly ILogger<UserController> logger;
-    private readonly AppDbContext db;
+    private readonly ILogger<UserController> _logger;
+    private readonly AppDbContext _db;
 
     public UserController(
         ILogger<UserController> logger,
         AppDbContext db
         )
     {
-        this.logger = logger;
-        this.db = db;
+        _logger = logger;
+        _db = db;
     }
 
     [HttpPost("API/User/{id}")]
     public async ValueTask<IActionResult> View(string id)
     {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == id);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserName == id);
         if (user == null)
+        {
             return BadRequest("User not found");
-        var currentUser = await db.Users.FirstOrDefaultAsync(u =>
+        }
+
+        var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
         var haveAccessToPrivateData = User.IsInRole("Admin") || user == currentUser;
         var userVm = new UserVm
@@ -62,34 +65,41 @@ public class UserController : ControllerBase
     {
         if (id.EndsWith("JPG", System.StringComparison.OrdinalIgnoreCase) ||
            id.EndsWith("PNG", System.StringComparison.OrdinalIgnoreCase))
+        {
             id = id[0..^4];
-        var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == id);
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserName == id);
         if (user.Avatar is null)
         {
             return NoContent();
         }
+
         return File(user.Avatar, "image/jpg");
     }
 
     [HttpPost]
     public async ValueTask<IActionResult> SetAvatar(string id, IFormFile file)
     {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == id);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserName == id);
         var memory = new MemoryStream();
         await file.CopyToAsync(memory);
         user.Avatar = memory.ToArray();
-        db.Update(user);
-        await db.SaveChangesAsync();
+        _db.Update(user);
+        await _db.SaveChangesAsync();
         return Ok();
     }
 
     [HttpPost, Auth]
     public async ValueTask<IActionResult> Follow(string id)
     {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == id);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserName == id);
         if (user == null)
+        {
             return BadRequest("User not found");
-        var currentUser = await db.Users.FirstOrDefaultAsync(u =>
+        }
+
+        var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
         var follow = currentUser?.FollowedFollows?.FirstOrDefault(f => f.Followed.Id == user.Id);
         if (follow == null)
@@ -100,47 +110,61 @@ public class UserController : ControllerBase
                 Follower = currentUser,
                 Accepted = !user.IsPrivate
             };
-            await db.AddAsync(follow);
+            await _db.AddAsync(follow);
             var notify = new Notification { }; //todo
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
         }
+
         return Ok();
     }
 
     [HttpPost, Auth]
     public async ValueTask<IActionResult> UnFollow(string id)
     {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == id);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserName == id);
         if (user == null)
+        {
             return BadRequest("User not found");
-        var currentUser = await db.Users.FirstOrDefaultAsync(u =>
+        }
+
+        var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
         if (user == currentUser)
+        {
             return Forbid();
+        }
+
         var follow = currentUser?.FollowedFollows?.FirstOrDefault(f => f.Followed.Id == user.Id);
         if (follow != null)
         {
-            db.Remove(follow);
-            await db.SaveChangesAsync();
+            _db.Remove(follow);
+            await _db.SaveChangesAsync();
         }
+
         return Ok();
     }
 
     [HttpPost, Auth]
     public async ValueTask<IActionResult> AcceptFollow(string id)
     {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == id);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserName == id);
         if (user == null)
+        {
             return BadRequest("User not found");
-        var currentUser = await db.Users.FirstOrDefaultAsync(u =>
+        }
+
+        var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
-        var follow = await db.Follows.FirstOrDefaultAsync(f =>
+        var follow = await _db.Follows.FirstOrDefaultAsync(f =>
             f.Follower == user && f.Followed == currentUser);
         if (follow is null)
+        {
             return BadRequest();
+        }
+
         follow.Accepted = true;
-        db.Update(follow);
-        await db.SaveChangesAsync();
+        _db.Update(follow);
+        await _db.SaveChangesAsync();
         return Ok();
     }
 
@@ -153,26 +177,35 @@ public class UserController : ControllerBase
         )
     {
         if (!ModelState.IsValid)
+        {
             return BadRequest(ModelState);
-        var currentUser = await db.Users.FirstOrDefaultAsync(u =>
+        }
+
+        var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
-        var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == username);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserName == username);
 
         IEnumerable<User> preUsers;
 
         if (username is null)
         {
-            preUsers = db.Users;
+            preUsers = _db.Users;
         }
         else
         {
             if ((follower && following) || (!follower && !following))
+            {
                 return BadRequest();
+            }
+
             var hasAccess = User.IsInRole("Admin") ||
                 user.FollowerFollows.Any(f => f.Follower == currentUser && f.Accepted);
             if (!hasAccess)
+            {
                 return Forbid();
-            var preUser = await db.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            }
+
+            var preUser = await _db.Users.FirstOrDefaultAsync(u => u.UserName == username);
             preUsers = follower ?
                 preUser.FollowerFollows.Select(f => f.Follower) :
                 preUser.FollowedFollows.Select(f => f.Followed);
@@ -203,6 +236,7 @@ public class UserController : ControllerBase
         {
             preUsers = preUsers.SkipWhile(u => u.Id != req.LastGuttedId).Skip(1);
         }
+
         preUsers = preUsers.Take(req.MaxCountToGet);
 
         var users = preUsers.ToList().Select(user => new UserVm
@@ -224,7 +258,7 @@ public class UserController : ControllerBase
     {
         var users = await Task.Run(() =>
         {
-            var users = db.Users.Where(u => u.UserName.StartsWith(s) || u.UserName.Contains(s))
+            var users = _db.Users.Where(u => u.UserName.StartsWith(s) || u.UserName.Contains(s))
                 .Take(5);
             return users;
         });

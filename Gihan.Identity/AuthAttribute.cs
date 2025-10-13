@@ -9,11 +9,11 @@ namespace Gihan.Identity;
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class AuthAttribute : Attribute, IActionFilter
 {
-    private readonly string[] roles;
+    private readonly string[] _roles;
 
     public AuthAttribute(string role = null)
     {
-        roles = role?.Split(',').Where(r => !string.IsNullOrWhiteSpace(r))
+        _roles = role?.Split(',').Where(r => !string.IsNullOrWhiteSpace(r))
             .Select(r => r.Trim()).ToArray();
     }
 
@@ -31,7 +31,8 @@ public sealed class AuthAttribute : Attribute, IActionFilter
             ThrowUnauthorizedRequest(context);
             return;
         }
-        if (roles?.All(r => !context.HttpContext.User.IsInRole(r)) ?? false)
+
+        if (_roles?.All(r => !context.HttpContext.User.IsInRole(r)) ?? false)
         {
             ThrowForbiddenRequest(context);
             return;

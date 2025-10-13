@@ -57,10 +57,17 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
     }
     public async ValueTask<bool> CheckPasswordAsync(TUser user, string password)
     {
-        if (user == null) return false;
+        if (user == null)
+        {
+            return false;
+        }
+
         user = await db.Users.FindAsync(user.Id);
         if (hasher.VerifyHashedPassword(user, user.PasswordHash, password) != PasswordVerificationResult.Failed)
+        {
             return true;
+        }
+
         logger.LogWarning("Password mismatch for user {userId}", user.Id);
         return false;
     }
@@ -68,7 +75,10 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
         TUser user, string currentPassword, string newPassword)
     {
         if (user == null)
+        {
             throw new ArgumentNullException(nameof(user));
+        }
+
         user = await db.Users.FindAsync(user.Id);
         if (hasher.VerifyHashedPassword(user, user.PasswordHash, currentPassword) != PasswordVerificationResult.Failed)
         {
@@ -87,7 +97,10 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
     public async ValueTask<IdentityResult> DeactivateAsync(TUser user)
     {
         if (user == null)
+        {
             throw new ArgumentNullException(nameof(user));
+        }
+
         user = await db.Users.FindAsync(user.Id);
         user.IsActive = false;
         db.Users.Update(user);
@@ -98,7 +111,10 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
     public async ValueTask<IdentityResult> ActivateAsync(TUser user)
     {
         if (user == null)
+        {
             throw new ArgumentNullException(nameof(user));
+        }
+
         user = await db.Users.FindAsync(user.Id);
         user.IsActive = true;
         db.Users.Update(user);
@@ -110,7 +126,10 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
     public async ValueTask<IdentityResult> RemoveAsync(TUser user)
     {
         if (user == null)
+        {
             throw new ArgumentNullException(nameof(user));
+        }
+
         user = await db.Users.FindAsync(user.Id);
         db.Users.Remove(user);
         await db.SaveChangesAsync();
@@ -129,15 +148,29 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
     public ValueTask<TUser> FindAsync(TUser user)
     {
         if (user is null)
+        {
             throw new ArgumentNullException(nameof(user));
+        }
+
         if (user.Id != default)
+        {
             return FindByIdAsync(user.Id);
+        }
+
         if (user.UserName != null)
+        {
             return FindByUserNameAsync(user.UserName);
+        }
+
         if (user.Email != null)
+        {
             return FindByEmailAsync(user.Email);
+        }
+
         if (user.MobileNumber != null)
+        {
             return FindByMobileNumberAsync(user.MobileNumber);
+        }
 
         return new ValueTask<TUser>((TUser)null);
     }
