@@ -1,13 +1,8 @@
 
 export class RequestManager {
-    baseUrl?: string;
     defaultHeaders?: { [id: string]: string };
 
-    constructor(baseUrl?: string, defaultHeaders?: { [id: string]: string }) {
-        if (baseUrl)
-            while (baseUrl.endsWith("/"))
-                baseUrl = baseUrl.substr(0, baseUrl.length - 1);
-        this.baseUrl = baseUrl;
+    constructor(defaultHeaders?: { [id: string]: string }) {
         this.defaultHeaders = defaultHeaders;
     }
 
@@ -19,8 +14,6 @@ export class RequestManager {
         callback?: (xhr: XMLHttpRequest) => void
     ) {
         let xhr = new XMLHttpRequest();
-        while (url.startsWith("/")) url = url.substr(1);
-        url = this.baseUrl + "/" + url;
         if (params && method === "GET") {
             var Url = new URL(url);
             let parameters = params as { [id: string]: any };

@@ -1,0 +1,20 @@
+@import "Vazirmatn/Vazirmatn-Variable-font-face.css";
+
+html {
+  height: 100%;
+}
+
+body,
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+body {
+  min-height: 100%;
+  background-color: light-dark(var(--color-slate-50), var(--color-slate-950));
+}
+
+#root {
+  flex: auto;
+}

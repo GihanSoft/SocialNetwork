@@ -1,59 +1,64 @@
-import React from 'react';
-import { Button, createStyles, makeStyles, Theme, CircularProgress } from '@material-ui/core';
-import Config from '../Services/Config';
-import { RequestManager } from '../Services/RequestManager';
-import { useHistory } from 'react-router';
-
-const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        root: {
-            margin: theme.spacing(3)
-        },
-        sendArea: {
-            display: 'block',
-            width: '100%',
-            minHeight: '150px',
-            marginBottom: theme.spacing(2),
-            fontSize: '12pt'
-        },
-        sendBtn: {
-            minWidth: '100px',
-            marginRight: theme.spacing(1),
-        },
-        line: {
-            display: 'flex'
-        }
-    }));
+import { useState } from "react";
+import { RequestManager } from "../Services/RequestManager";
+import { useNavigate } from "react-router";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import Stack from "@mui/material/Stack";
+import TextareaAutosize from "@mui/material/TextareaAutosize";
+import { useTheme } from "@mui/material/styles";
+import Box from "@mui/material/Box";
 
 export default function SendPost() {
-    const classes = useStyles();
-    let [charCount, setCharCount] = React.useState(0);
-    const config = Config;
-    const history = useHistory();
-    return (
-        <div className={classes.root}>
-            <textarea name='text' className={classes.sendArea}
-                onChange={(e) => {
-                    if (e.currentTarget.value.length > 300)
-                        e.currentTarget.value = e.currentTarget.value.substr(0, 300);
-                    setCharCount(e.currentTarget.value.length / 3)
-                }} />
-            <div className={classes.line}>
-                <Button variant='contained' color='primary' className={classes.sendBtn}
-                    onClick={() => {
-                        let reqManager = new RequestManager(config.apiBase);
-                        reqManager.Post('/post/send', xhr => {
-                            if (xhr.status === 200) {
-                                history.push('/');
-                            }
-                        }, {
-                            text: (document.getElementsByName('text')[0] as HTMLTextAreaElement).value
-                        })
-                    }}>
-                    Send
-                </Button>
-                <CircularProgress value={charCount} color='primary' variant='static' />
-            </div>
-        </div>
-    );
+  const theme = useTheme();
+  let [charCount, setCharCount] = useState(0);
+  const navigate = useNavigate();
+  return (
+    <Stack direction="column" gap={1}>
+      <TextareaAutosize
+        style={{
+          flex: "auto",
+        }}
+        name="text"
+        onChange={(e) => {
+          if (e.currentTarget.value.length > 300)
+            e.currentTarget.value = e.currentTarget.value.substr(0, 300);
+          setCharCount(e.currentTarget.value.length / 3);
+        }}
+      />
+      <Stack direction="row" gap={1}>
+        <Box flex="auto" />
+        <CircularProgress
+          value={charCount}
+          color="primary"
+          variant="determinate"
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          sx={(theme) => ({
+            minWidth: "100px",
+            marginRight: theme.spacing(1),
+          })}
+          onClick={() => {
+            let reqManager = new RequestManager();
+            reqManager.Post(
+              "/api/post/send",
+              (xhr) => {
+                if (xhr.status === 200) {
+                  navigate("/");
+                }
+              },
+              {
+                text: (
+                  document.getElementsByName("text")[0] as HTMLTextAreaElement
+                ).value,
+              }
+            );
+          }}
+        >
+          Send
+        </Button>
+      </Stack>
+    </Stack>
+  );
 }

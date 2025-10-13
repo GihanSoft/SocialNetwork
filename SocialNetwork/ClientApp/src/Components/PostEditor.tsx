@@ -1,9 +1,5 @@
-import React from 'react';
-
 interface PostEditorProps {
-    text?: string;
+  text?: string;
 }
 
-export default function PostEditor(props: PostEditorProps) {
-    
-}
+export default function PostEditor(props: PostEditorProps) {}

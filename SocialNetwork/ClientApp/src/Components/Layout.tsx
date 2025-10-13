@@ -1,267 +1,153 @@
-import React from "react";
-import { useHistory, NavLink } from "react-router-dom";
-import {
-    AppBar,
-    CssBaseline,
-    Drawer,
-    Fab,
-    Hidden,
-    IconButton,
-    Toolbar,
-    Typography,
-    ButtonBase,
-    Button,
-    Grid,
-    Avatar
-} from "@material-ui/core";
-import {
-    makeStyles,
-    useTheme,
-    Theme,
-    createStyles
-} from "@material-ui/core/styles";
 import Icon from "@mdi/react";
 import { mdiMenu, mdiPlus, mdiLogin } from "@mdi/js";
 import HideOnScroll from "./HideOnScroll";
 import AuthorizeService from "../Services/AuthorizeService";
 import MyDrawer from "./Drawer";
-import config from "../Services/Config";
 import authService from "../Services/AuthorizeService";
+import { NavLink, Outlet, useNavigate } from "react-router";
+import { useState } from "react";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
+import Drawer from "@mui/material/Drawer";
+import Fab from "@mui/material/Fab";
+import Avatar from "@mui/material/Avatar";
+import Stack from "@mui/material/Stack";
+import { useTheme } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Button from "@mui/material/Button";
 
 const drawerWidth = 256;
 
-const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        root: {
-            display: "flex"
-        },
-        lastNI: {
-            flexGrow: 1,
-            width: "calc(100% - 18px)",
-            height: "calc(100% - 18px)",
-            margin: 9,
-            color: theme.palette.getContrastText(theme.palette.primary.main)
-        },
-        LB: {
-            margin: "11px 0"
-        },
-        drawer: {
-            [theme.breakpoints.up("md")]: {
-                width: drawerWidth,
-                flexShrink: 0
-            }
-        },
-        appBar: {
-            boxShadow: "0 0 0 0 transparent",
-            marginLeft: drawerWidth,
-            zIndex: theme.zIndex.modal + 1
-        },
-        navbar: {
-            color: "inherit",
-            width: "fill"
-        },
-        menuButton: {
-            margin: 5,
-            marginRight: theme.spacing(2),
-            [theme.breakpoints.up("md")]: {
-                display: "none"
-            }
-        },
-        toolbar: {
-            minHeight: 64
-        },
-        drawerPaper: {
-            width: drawerWidth
-        },
-        content: {
-            marginRight: drawerWidth,
-            flexGrow: 1,
-            padding: theme.spacing(0),
-            [theme.breakpoints.down("sm")]: {
-                width: "75%",
-                marginRight: 0
-            }
-        },
-        fab: {
-            position: "fixed",
-            right: "0",
-            bottom: "0",
-            margin: theme.spacing(1)
-        },
-        icon: {
-            color: theme.palette.common.white,
-            fill: theme.palette.common.white
-        },
-        link: {
-            color: theme.palette.common.white,
-            textDecoration: "none"
-        }
-    })
-);
+export default function Layout() {
+  const navigate = useNavigate();
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const theme = useTheme();
 
-interface ResponsiveDrawerProps {
-    container?: Element;
-    children: any;
-}
+  const handleDrawerToggle = () => {
+    setIsMobileDrawerOpen(!isMobileDrawerOpen);
+  };
 
-export default function Layout(props: ResponsiveDrawerProps) {
-    const history = useHistory();
-    const { container } = props;
-    const classes = useStyles();
-    const theme = useTheme();
-    const [isMobileDrawerOpen, setIsMobileDrawerOpen] = React.useState(false);
+  const routeTo = (url: string) => {
+    navigate(url);
+    setIsMobileDrawerOpen(false);
+  };
+  let username: string = authService.isSigned() || "";
 
-    const handleDrawerToggle = () => {
-        setIsMobileDrawerOpen(!isMobileDrawerOpen);
-    };
-
-    const routeTo = (url: string) => {
-        history.push(url);
-        setIsMobileDrawerOpen(false);
-    };
-    let username: string = authService.isSigned() || "";
-
-    return (
-        <div className={classes.root}>
-            <CssBaseline />
-            <HideOnScroll direction="down">
-                <AppBar position="fixed" className={classes.appBar}>
-                    <Toolbar className={classes.navbar}>
-                        <Grid container spacing={0}>
-                            <Grid item xs={3} sm={2} lg={1}>
-                                <IconButton
-                                    aria-label="open drawer"
-                                    edge="start"
-                                    onClick={handleDrawerToggle}
-                                    className={classes.menuButton}
-                                >
-                                    <Icon
-                                        path={mdiMenu}
-                                        size={1.25}
-                                        className={classes.icon}
-                                    />
-                                </IconButton>
-                            </Grid>
-                            <Grid item xs={6} sm={8} lg={10}>
-                                <NavLink
-                                    to="/"
-                                    style={{ textDecoration: "none" }}
-                                >
-                                    <ButtonBase
-                                        className={classes.lastNI}
-                                        // onClick={() => routeTo("/")}
-                                    >
-                                        <Typography variant="h6" noWrap>
-                                            G Social Network
-                                        </Typography>
-                                    </ButtonBase>
-                                </NavLink>
-                            </Grid>
-                            <Grid
-                                item
-                                xs={3}
-                                sm={2}
-                                lg={1}
-                                style={{
-                                    display: "flex",
-                                    justifyContent: "flex-end"
-                                }}
-                            >
-                                {AuthorizeService.isSigned() ? (
-                                    <NavLink
-                                        to={`/user/${username}`}
-                                        style={{ textDecoration: "none" }}
-                                    >
-                                        <IconButton>
-                                            <Avatar
-                                                src={`${config.apiBase}/user/avatar/${username}`}
-                                                alt={username[0].toUpperCase()}
-                                            />
-                                        </IconButton>
-                                    </NavLink>
-                                ) : (
-                                    <Button
-                                        className={classes.LB}
-                                        onClick={() => routeTo("/SignIn")}
-                                    >
-                                        <Typography
-                                            variant="body1"
-                                            className={classes.icon}
-                                        >
-                                            SignIn
-                                        </Typography>
-                                        <Icon
-                                            path={mdiLogin}
-                                            size={1.25}
-                                            className={classes.icon}
-                                        />
-                                    </Button>
-                                )}
-                            </Grid>
-                        </Grid>
-                    </Toolbar>
-                </AppBar>
-            </HideOnScroll>
-            <nav className={classes.drawer}>
-                {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-                <Hidden smUp implementation="css">
-                    <Drawer
-                        container={container}
-                        variant="temporary"
-                        anchor={theme.direction === "rtl" ? "right" : "left"}
-                        open={isMobileDrawerOpen}
-                        onClose={handleDrawerToggle}
-                        classes={{
-                            paper: classes.drawerPaper
-                        }}
-                        ModalProps={{
-                            keepMounted: true // Better open performance on mobile.
-                        }}
-                    >
-                        <MyDrawer
-                            isMobileDrawerOpenSetter={setIsMobileDrawerOpen}
-                        />
-                    </Drawer>
-                </Hidden>
-                <Hidden smDown implementation="css">
-                    <Drawer
-                        classes={{
-                            paper: classes.drawerPaper
-                        }}
-                        variant="permanent"
-                        open
-                    >
-                        <MyDrawer
-                            isMobileDrawerOpenSetter={setIsMobileDrawerOpen}
-                        />
-                    </Drawer>
-                </Hidden>
-            </nav>
-            <main className={classes.content}>
-                <div className={classes.toolbar} />
-                {props.children}
-            </main>
+  return (
+    <Stack direction="column" sx={{ flex: "auto" }}>
+      <HideOnScroll direction="down">
+        <AppBar position="static">
+          <Toolbar>
+            <IconButton
+              onClick={handleDrawerToggle}
+              sx={{ display: { md: "none" } }}
+            >
+              <Icon
+                path={mdiMenu}
+                size={1.25}
+                style={{
+                  color: theme.palette.common.white,
+                  fill: theme.palette.common.white,
+                }}
+              />
+            </IconButton>
+            <Button component={NavLink} to="/">
+              G Social Network
+            </Button>
+            <Box flex="auto"></Box>
             {AuthorizeService.isSigned() ? (
-                <Hidden mdUp>
-                    <HideOnScroll direction="up">
-                        <Fab
-                            className={classes.fab}
-                            color="primary"
-                            onClick={() => {
-                                history.push("/post/new");
-                            }}
-                        >
-                            <Icon
-                                path={mdiPlus}
-                                size={1.25}
-                                className={classes.icon}
-                            />
-                        </Fab>
-                    </HideOnScroll>
-                </Hidden>
+              <IconButton component={NavLink} to={`/user/${username}`}>
+                <Avatar
+                  src={`api/user/avatar/${username}`}
+                  alt={username[0].toUpperCase()}
+                />
+              </IconButton>
             ) : (
-                ""
+              <Button
+                color="inherit"
+                onClick={() => routeTo("/SignIn")}
+                endIcon={<Icon path={mdiLogin} size={1.25} />}
+              >
+                SignIn
+              </Button>
             )}
-        </div>
-    );
+          </Toolbar>
+        </AppBar>
+      </HideOnScroll>
+      <Container>
+        <Outlet />
+      </Container>
+
+      {AuthorizeService.isSigned() && (
+        <HideOnScroll direction="up">
+          <Fab
+            color="primary"
+            onClick={() => {
+              navigate("/post/new");
+            }}
+            sx={(theme) => ({
+              position: "fixed",
+              bottom: theme.spacing(1),
+              insetInlineEnd: theme.spacing(1),
+            })}
+          >
+            <Icon path={mdiPlus} size={1.25} />
+          </Fab>
+        </HideOnScroll>
+      )}
+
+      <Drawer
+        sx={
+          {
+            // display: { xs: "flex", sm: "none" },
+          }
+        }
+        variant="temporary"
+        open={isMobileDrawerOpen}
+        onClose={handleDrawerToggle}
+      >
+        <MyDrawer isMobileDrawerOpenSetter={setIsMobileDrawerOpen} />
+      </Drawer>
+    </Stack>
+  );
+
+  return (
+    <Stack direction="column" sx={{ flex: "auto" }}>
+      <Box
+        component="nav"
+        sx={(theme) => ({
+          [theme.breakpoints.up("md")]: {
+            width: drawerWidth,
+            flexShrink: 0,
+          },
+        })}
+      >
+        {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
+        <Drawer
+          sx={(theme) => ({
+            display: { xs: "flex", sm: "none" },
+          })}
+          variant="temporary"
+          open={isMobileDrawerOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
+        >
+          <MyDrawer isMobileDrawerOpenSetter={setIsMobileDrawerOpen} />
+        </Drawer>
+        <Drawer
+          sx={(theme) => ({
+            display: { xs: "flex", sm: "none" },
+          })}
+          variant="permanent"
+          open
+        >
+          <MyDrawer isMobileDrawerOpenSetter={setIsMobileDrawerOpen} />
+        </Drawer>
+      </Box>
+    </Stack>
+  );
 }
