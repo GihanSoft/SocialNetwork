@@ -1,11 +1,13 @@
-﻿using Gihan.EfCore;
-
-using System;
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SocialNetwork.Models;
 
-public class Notification : EntityBase
+public class Notification
 {
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public long Id { get; set; }
+
     public string Message { get; set; }
     public string Link { get; set; }
     public bool Seen { get; set; }

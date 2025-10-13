@@ -1,13 +1,14 @@
-﻿using Gihan.EfCore;
-
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SocialNetwork.Models;
 
-public class Follow : EntityBase
+public class Follow
 {
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public long Id { get; set; }
+
     public bool Accepted { get; set; }
     public DateTime Time { get; set; }
     [Required]

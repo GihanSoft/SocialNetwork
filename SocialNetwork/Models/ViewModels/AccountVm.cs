@@ -1,11 +1,12 @@
-﻿using Gihan.EfCore;
-
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SocialNetwork.Models.ViewModels;
 
-public class AccountVm : EntityBase<int>
+public class AccountVm
 {
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
     [StringLength(450, MinimumLength = 4)]
     public string UserName { get; set; }
     [EmailAddress, StringLength(450)]

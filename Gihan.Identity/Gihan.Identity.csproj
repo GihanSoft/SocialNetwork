@@ -10,7 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Gihan.EfCore\Gihan.EfCore.csproj" />
     <ProjectReference Include="..\Gihan.Security.Cryptography\Gihan.Security.Cryptography.csproj" />
   </ItemGroup>
 

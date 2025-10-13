@@ -1,11 +1,13 @@
-﻿using Gihan.EfCore;
-
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SocialNetwork.Models;
 
-public class Like : EntityBase
+public class Like
 {
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public long Id { get; set; }
+
     [Required]
     public virtual Post Post { get; set; }
     [Required]

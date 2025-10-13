@@ -1,12 +1,14 @@
-﻿using Gihan.EfCore;
-
-using System;
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Gihan.Identity.Models;
 
-public class AccessToken<TUser> : EntityBase<Guid>
+public class AccessToken<TUser>
     where TUser : UserBase
 {
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public Guid Id { get; set; }
+
     public int UserId { get; set; }
     public virtual TUser User { get; set; }
 

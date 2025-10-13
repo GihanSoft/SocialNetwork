@@ -1,14 +1,15 @@
-﻿using Gihan.EfCore;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace SocialNetwork.Models.ViewModels;
 
-public class PostVm : EntityBase
+public class PostVm
 {
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public long Id { get; set; }
+
     public string Sender { get; set; }
     public string Text { get; set; }
     public DateTime Time { get; set; }

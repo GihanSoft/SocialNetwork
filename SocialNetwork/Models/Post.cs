@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-using Gihan.EfCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace SocialNetwork.Models;
 
-public class Post : EntityBase
+[Index(nameof(Time))]
+public class Post
 {
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public long Id { get; set; }
+
     public string Text { get; set; }
 
-    [Index]
     public DateTime Time { get; set; }
 
     [Required]
