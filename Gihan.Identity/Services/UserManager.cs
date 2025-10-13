@@ -1,12 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 using System.Threading.Tasks;
-using Gihan.Identity.Models;
+
 using Gihan.Identity.EfCore;
-using Gihan.Security.Cryptography;
+using Gihan.Identity.Models;
+
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Gihan.Identity.Services;
 
@@ -30,12 +30,12 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
     where TUser : UserBase
 {
     private readonly IdentityDbContext<TUser> db;
-    private readonly IHasher hasher;
+    private readonly IPasswordHasher<TUser> hasher;
     private readonly ILogger<UserManager<TUser>> logger;
 
     public UserManager(
         IdentityDbContext<TUser> db,
-        IHasher hasher,
+        IPasswordHasher<TUser> hasher,
         ILogger<UserManager<TUser>> logger)
     {
         this.db = db;
@@ -49,7 +49,7 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
         // validate password
         user.Email = user.Email.ToLower();
         user.UserName = user.UserName.ToLower();
-        user.PasswordHash = hasher.Hash(password);
+        user.PasswordHash = hasher.HashPassword(user, password);
         user.IsActive = true;
         await db.Users.AddAsync(user);
         await db.SaveChangesAsync();
@@ -59,7 +59,7 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
     {
         if (user == null) return false;
         user = await db.Users.FindAsync(user.Id);
-        if (user.PasswordHash == hasher.Hash(password))
+        if (hasher.VerifyHashedPassword(user, user.PasswordHash, password) != PasswordVerificationResult.Failed)
             return true;
         logger.LogWarning("Password mismatch for user {0}", user.Id);
         return false;
@@ -70,9 +70,9 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
         if (user == null)
             throw new ArgumentNullException(nameof(user));
         user = await db.Users.FindAsync(user.Id);
-        if (user.PasswordHash == hasher.Hash(currentPassword))
+        if (hasher.VerifyHashedPassword(user, user.PasswordHash, currentPassword) != PasswordVerificationResult.Failed)
         {
-            user.PasswordHash = hasher.Hash(newPassword);
+            user.PasswordHash = hasher.HashPassword(user, newPassword);
             db.Users.Update(user);
             await db.SaveChangesAsync();
             logger.LogInformation("User {0} password changed", user.Id);

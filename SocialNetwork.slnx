@@ -5,7 +5,6 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="Gihan.Identity/Gihan.Identity.csproj" />
-    <Project Path="Gihan.Security.Cryptography/Gihan.Security.Cryptography.csproj" />
     <Project Path="SocialNetwork/SocialNetwork.csproj" />
   </Folder>
   <Folder Name="/[root]/">

@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System;
+using System.Text;
+using System.Threading.Tasks;
+
+using Gihan.Identity.EfCore;
+using Gihan.Identity.Models;
+using Gihan.Identity.Services;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
-using Gihan.Identity.Services;
-using Gihan.Identity.Models;
-using Gihan.Identity.EfCore;
-using Gihan.Security.Cryptography;
 
 namespace Gihan.Identity;
 
@@ -17,13 +18,12 @@ public static class Configure
 {
     public static void AddJwtIdentity<TDbContext, TUser>(
         this IServiceCollection services,
-        JwtIdentityOptions jwtOptions,
-        CryptographyOptions cryptographyOptions)
+        JwtIdentityOptions jwtOptions)
         where TDbContext : IdentityDbContext<TUser>
         where TUser : UserBase
     {
         services.AddDbContext<IdentityDbContext<TUser>, TDbContext>();
-        services.AddScoped<IHasher, Hasher>(s=> new Hasher(SHA256.Create()));
+        services.AddScoped<Microsoft.AspNetCore.Identity.IPasswordHasher<TUser>, Microsoft.AspNetCore.Identity.PasswordHasher<TUser>>();
         services.AddScoped<IUserManager<TUser>, UserManager<TUser>>();
         services.AddScoped<IJwtAuthManager<TUser>, JwtAuthManager<TUser>>();
         services.AddHttpContextAccessor();
@@ -39,19 +39,19 @@ public static class Configure
         {
             config.RequireHttpsMetadata = false;
             config.SaveToken = true;
-            var keyProvider = new KeyProvider(jwtOptions.SecretKey, cryptographyOptions.KeySize);
             config.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidIssuer = jwtOptions.Issuer,
                 ValidateIssuer = false,
                 ValidAudience = jwtOptions.Audience,
                 ValidateAudience = false,
-                IssuerSigningKey = new SymmetricSecurityKey(keyProvider.GetNextKey(256)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
                 ValidateIssuerSigningKey = true,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero,
-                TokenDecryptionKey = jwtOptions.UseEncryption ?
-                                     new SymmetricSecurityKey(keyProvider.Key.ToArray()) : null
+                TokenDecryptionKey = jwtOptions.UseEncryption
+                    ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+                    : null
             };
             config.Events = new JwtBearerEvents
             {

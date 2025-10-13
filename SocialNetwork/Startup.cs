@@ -1,7 +1,6 @@
 using System;
 
 using Gihan.Identity;
-using Gihan.Security.Cryptography;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -19,11 +18,8 @@ builder.AddSqlServerDbContext<AppDbContext>("default", configureDbContextOptions
 
 builder.Services.AddJwtIdentity<AppDbContext, User>(new JwtIdentityOptions
 {
-    SecretKey = "secret key for JWT",
+    SecretKey = "secret key for JWT and should be loooooong",
     ValidityTime = TimeSpan.FromDays(32)
-}, new CryptographyOptions
-{
-    Password = "secret password for JWT",
 });
 
 builder.Services.AddControllers();

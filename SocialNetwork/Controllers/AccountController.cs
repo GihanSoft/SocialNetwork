@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 using Gihan.Identity;
 using Gihan.Identity.Services;
-using Gihan.Security.Cryptography;
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -20,13 +20,13 @@ namespace SocialNetwork.Controllers;
 public class AccountController : ControllerBase
 {
     private readonly ILogger<AccountController> logger;
-    private readonly IHasher hasher;
+    private readonly IPasswordHasher<User> hasher;
     private readonly IJwtAuthManager<User> authManager;
     private readonly AppDbContext db;
 
     public AccountController(
         ILogger<AccountController> logger,
-        IHasher hasher,
+        IPasswordHasher<User> hasher,
         AppDbContext db,
         IJwtAuthManager<User> authManager
         )
@@ -56,7 +56,7 @@ public class AccountController : ControllerBase
         }
         else
         {
-            var isPass = user.PasswordHash == hasher.Hash(account.Password);
+            var isPass = hasher.VerifyHashedPassword(user, user.PasswordHash, account.Password) != PasswordVerificationResult.Failed;
             if (!isPass)
             {
                 logger.LogInformation("login request failed because of UserName or password mismatch");
@@ -96,10 +96,11 @@ public class AccountController : ControllerBase
             UserName = account.UserName.ToLower(),
             Email = account.Email.ToLower(),
             MobileNumber = account.Mobile,
-            PasswordHash = hasher.Hash(account.Password),
             IsPrivate = account.IsPrivate,
             IsActive = true,
         };
+
+        user.PasswordHash = hasher.HashPassword(user, account.Password);
 
         await db.AddAsync(user);
         await db.AddAsync(new Follow
@@ -135,11 +136,11 @@ public class AccountController : ControllerBase
         }
         if (!string.IsNullOrEmpty(account.OldPassword))
         {
-            if (hasher.Hash(account.OldPassword) != currentUser.PasswordHash)
+            if (hasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, account.OldPassword) != PasswordVerificationResult.Failed)
                 ModelState.AddModelError("OldPassword", "Old Password mismatch");
 
             if (ModelState.IsValid)
-                currentUser.PasswordHash = hasher.Hash(account.Password);
+                currentUser.PasswordHash = hasher.HashPassword(currentUser, account.Password);
         }
         else
         {

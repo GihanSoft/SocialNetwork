@@ -1,16 +1,18 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
-using Gihan.Identity.Models;
+
 using Gihan.Identity.EfCore;
-using Gihan.Security.Cryptography;
+using Gihan.Identity.Models;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Gihan.Identity.Services;
 
@@ -26,7 +28,6 @@ public interface IJwtAuthManager<TUser> : IDisposable
 public class JwtAuthManager<TUser> : IJwtAuthManager<TUser>
     where TUser : UserBase
 {
-    //protected Hasher _hasher;
     protected IUserManager<TUser> _userManager;
     protected IdentityDbContext<TUser> _jwtIdentityDb;
     public HttpContext _context;
@@ -68,9 +69,7 @@ public class JwtAuthManager<TUser> : IJwtAuthManager<TUser>
         };
         accessToken = (await _jwtIdentityDb.AddAsync(accessToken)).Entity;
         await _jwtIdentityDb.SaveChangesAsync();
-        //return accessToken.Id.ToString();
-
-        var keyProvider = new KeyProvider(_identityOptions.SecretKey, KeySize._256);
+        
         var issuer = _identityOptions.Issuer ?? "";
 
         var claims = new List<Claim>
@@ -85,10 +84,10 @@ public class JwtAuthManager<TUser> : IJwtAuthManager<TUser>
         claims.AddRange(_jwtIdentityDb.UserRoles
             .Where(ur => ur.UserId == user.Id)
             .Select(ur => new Claim(ClaimTypes.Role, ur.Role.Name)));
-        var key = new SymmetricSecurityKey(keyProvider.GetNextKey(256));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_identityOptions.SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var now = DateTime.Now;
-        var encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(keyProvider.Key.ToArray()),
+        var encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_identityOptions.SecretKey)),
                             SecurityAlgorithms.Aes256KW, SecurityAlgorithms.Aes256CbcHmacSha512);
         var descriptor = new SecurityTokenDescriptor
         {
@@ -104,7 +103,6 @@ public class JwtAuthManager<TUser> : IJwtAuthManager<TUser>
         var tokenHandler = new JwtSecurityTokenHandler();
         var securityToken = tokenHandler.CreateToken(descriptor);
         var tokenStr = new JwtSecurityTokenHandler().WriteToken(securityToken);
-        keyProvider.Dispose();
         return tokenStr;
     }
 
