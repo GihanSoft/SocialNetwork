@@ -1,4 +1,5 @@
-﻿using SocialNetwork.EfCore;
+﻿using Gihan.EfCore;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

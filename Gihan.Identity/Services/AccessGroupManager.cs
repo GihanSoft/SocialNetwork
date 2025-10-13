@@ -1,11 +1,12 @@
-﻿using SocialNetwork.Identity.EfCore;
-using SocialNetwork.Identity.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using Gihan.Identity.Models;
+using Gihan.Identity;
+using Gihan.Identity.EfCore;
 
-namespace SocialNetwork.Identity.Services;
+namespace Gihan.Identity.Services;
 
 public interface IAccessGroupManager<TUser> : IDisposable
     where TUser : UserBase

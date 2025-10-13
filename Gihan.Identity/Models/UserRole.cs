@@ -1,7 +1,8 @@
-﻿using SocialNetwork.EfCore;
+﻿using Gihan.EfCore;
+
 using System;
 
-namespace SocialNetwork.Identity.Models;
+namespace Gihan.Identity.Models;
 
 public class UserRole<TUser> : EntityBase<int>
     where TUser : UserBase

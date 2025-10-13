@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace SocialNetwork.Security.Cryptography;
+namespace Gihan.Security.Cryptography;
 
 public static class RandomNumberGeneratorEx
 {

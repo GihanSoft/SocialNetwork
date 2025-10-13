@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SocialNetwork.Identity;
+namespace Gihan.Identity;
 
 public class JwtIdentityOptions
 {

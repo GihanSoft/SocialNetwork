@@ -1,4 +1,5 @@
-﻿using SocialNetwork.EfCore;
+﻿using Gihan.EfCore;
+
 using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.Models.ViewModels;

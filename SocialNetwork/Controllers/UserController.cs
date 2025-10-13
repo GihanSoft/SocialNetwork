@@ -1,17 +1,19 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using SocialNetwork.Data;
-using SocialNetwork.Identity;
-using SocialNetwork.Models;
-using SocialNetwork.Models.ViewModels;
-using SocialNetwork.Security.Cryptography;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+
+using Gihan.Identity;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+using SocialNetwork.Data;
+using SocialNetwork.Models;
+using SocialNetwork.Models.ViewModels;
 
 namespace SocialNetwork.Controllers;
 

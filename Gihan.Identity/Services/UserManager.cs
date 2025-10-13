@@ -1,14 +1,14 @@
-﻿using SocialNetwork.Identity.EfCore;
-using SocialNetwork.Identity.Models;
-using SocialNetwork.Security.Cryptography;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Gihan.Identity.Models;
+using Gihan.Identity.EfCore;
+using Gihan.Security.Cryptography;
 
-namespace SocialNetwork.Identity.Services;
+namespace Gihan.Identity.Services;
 
 public interface IUserManager<TUser> : IDisposable
     where TUser : UserBase

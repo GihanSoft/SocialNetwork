@@ -1,7 +1,8 @@
-﻿using SocialNetwork.EfCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+
+using Gihan.EfCore;
 
 namespace SocialNetwork.Models;
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-namespace SocialNetwork.Security.Cryptography;
+namespace Gihan.Security.Cryptography;
 
 /// <summary>
 /// Cryptography key builder.

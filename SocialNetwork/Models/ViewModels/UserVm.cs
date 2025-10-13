@@ -1,6 +1,4 @@
-﻿using SocialNetwork.EfCore;
-
-namespace SocialNetwork.Models.ViewModels;
+﻿namespace SocialNetwork.Models.ViewModels;
 
 public class UserVm : AccountVm
 {
@@ -10,5 +8,4 @@ public class UserVm : AccountVm
     public bool IsFollowRequested { get; set; }
     public long FollowersCount { get; set; }
     public long FollowingsCount { get; set; }
-
 }

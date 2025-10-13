@@ -2,7 +2,7 @@
 using System;
 using System.Security.Cryptography;
 
-namespace SocialNetwork.Security.Cryptography;
+namespace Gihan.Security.Cryptography;
 
 #if NETCOREAPP3_0 || NETCOREAPP3_1
 using Microsoft.Extensions.DependencyInjection;

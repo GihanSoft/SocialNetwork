@@ -1,15 +1,15 @@
 using System;
 
+using Gihan.Identity;
+using Gihan.Security.Cryptography;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using SocialNetwork.Data;
-using SocialNetwork.Identity;
 using SocialNetwork.Models;
-
-using SocialNetwork.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder();
 

@@ -1,10 +1,11 @@
-﻿using SocialNetwork.EfCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SocialNetwork.Identity.Models;
+using Gihan.EfCore;
+
+namespace Gihan.Identity.Models;
 
 [Table("Accounts")]
 public class UserBase : EntityBase<int>

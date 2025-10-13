@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
+
+using Gihan.Identity.Models;
 
 namespace SocialNetwork.Models;
 
-public class User : Identity.Models.UserBase
+public class User : UserBase
 {
     public byte[] Avatar { get; set; }
     public bool IsPrivate { get; set; }

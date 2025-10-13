@@ -1,8 +1,9 @@
-﻿using SocialNetwork.EfCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace SocialNetwork.Identity.Models;
+using Gihan.EfCore;
+
+namespace Gihan.Identity.Models;
 
 public class Role : EntityBase<int>
 {

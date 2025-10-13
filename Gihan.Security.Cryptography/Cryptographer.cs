@@ -3,9 +3,10 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+
 using static System.Text.Encoding;
 
-namespace SocialNetwork.Security.Cryptography;
+namespace Gihan.Security.Cryptography;
 
 public interface ICryptographer : IDisposable
 {
@@ -50,7 +51,7 @@ public class Cryptographer : ICryptographer
         if (hasSalt)
             plainText = ASCII.GetString(rng.GetNonZeroRandomBytes(SaltSize)) + plainText;
 
-        using Aes aes = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+        using var aes = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
             new AesCng() as Aes : new AesManaged();
         aes.Mode = CipherMode.CBC;
         aes.Key = KeyProvider.Key.ToArray();
@@ -72,7 +73,7 @@ public class Cryptographer : ICryptographer
         if (cipherTextBytes.Length == 0) return string.Empty;
 
         string plainText = null;
-        using Aes aes = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+        using var aes = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
             new AesCng() as Aes : new AesManaged();
         aes.Mode = CipherMode.CBC;
         aes.Key = KeyProvider.Key.ToArray();

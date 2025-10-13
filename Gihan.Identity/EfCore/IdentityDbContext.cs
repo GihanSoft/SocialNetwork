@@ -1,8 +1,8 @@
-﻿using SocialNetwork.Identity.Models;
-using SocialNetwork.EfCore;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Gihan.EfCore;
+using Gihan.Identity.Models;
 
-namespace SocialNetwork.Identity.EfCore;
+namespace Gihan.Identity.EfCore;
 
 public class IdentityDbContext<TUser, TAccessGroupMembership, TAccessToken> : DbContext
     where TUser : UserBase

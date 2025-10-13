@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+
 using System;
 using System.Linq;
 
-namespace SocialNetwork.Identity;
+namespace Gihan.Identity;
 
 public sealed class AuthAttribute : Attribute, IActionFilter
 {

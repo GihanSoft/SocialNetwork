@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SocialNetwork.Security.Cryptography;
+namespace Gihan.Security.Cryptography;
 
 public enum KeySize
 {

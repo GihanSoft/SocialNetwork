@@ -1,7 +1,4 @@
-﻿using SocialNetwork.Identity.EfCore;
-using SocialNetwork.Identity.Models;
-using SocialNetwork.Security.Cryptography;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -11,8 +8,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Gihan.Identity.Models;
+using Gihan.Identity.EfCore;
+using Gihan.Security.Cryptography;
 
-namespace SocialNetwork.Identity.Services;
+namespace Gihan.Identity.Services;
 
 public interface IJwtAuthManager<TUser> : IDisposable
     where TUser : UserBase

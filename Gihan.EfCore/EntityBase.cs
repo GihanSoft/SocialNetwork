@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SocialNetwork.EfCore;
+namespace Gihan.EfCore;
 
 public interface IEntityBase<TId>
     where TId : struct

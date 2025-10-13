@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SocialNetwork.EfCore;
+namespace Gihan.EfCore;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
 public class IndexAttribute : Attribute
