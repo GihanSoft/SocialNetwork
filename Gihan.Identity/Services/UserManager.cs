@@ -61,7 +61,7 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
         user = await db.Users.FindAsync(user.Id);
         if (hasher.VerifyHashedPassword(user, user.PasswordHash, password) != PasswordVerificationResult.Failed)
             return true;
-        logger.LogWarning("Password mismatch for user {0}", user.Id);
+        logger.LogWarning("Password mismatch for user {userId}", user.Id);
         return false;
     }
     public async ValueTask<IdentityResult> ChangePassword(
@@ -75,12 +75,12 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
             user.PasswordHash = hasher.HashPassword(user, newPassword);
             db.Users.Update(user);
             await db.SaveChangesAsync();
-            logger.LogInformation("User {0} password changed", user.Id);
+            logger.LogInformation("User {userId} password changed", user.Id);
             return IdentityResult.Success;
         }
         else
         {
-            logger.LogWarning("Change password failed for user {0}", user.Id);
+            logger.LogWarning("Change password failed for user {userId}", user.Id);
             return IdentityResult.Failed();
         }
     }
@@ -92,7 +92,7 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
         user.IsActive = false;
         db.Users.Update(user);
         await db.SaveChangesAsync();
-        logger.LogInformation("User {0} deactivated");
+        logger.LogInformation("User {userId} deactivated", user.Id);
         return IdentityResult.Success;
     }
     public async ValueTask<IdentityResult> ActivateAsync(TUser user)
@@ -103,7 +103,7 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
         user.IsActive = true;
         db.Users.Update(user);
         await db.SaveChangesAsync();
-        logger.LogInformation("User {0} activated");
+        logger.LogInformation("User {userId} activated", user.Id);
         return IdentityResult.Success;
     }
 
@@ -114,7 +114,7 @@ public class UserManager<TUser> : IUserManager<TUser>, IDisposable
         user = await db.Users.FindAsync(user.Id);
         db.Users.Remove(user);
         await db.SaveChangesAsync();
-        logger.LogInformation("User {0} deleted");
+        logger.LogInformation("User {userId} deleted", user.Id);
         return IdentityResult.Success;
     }
 

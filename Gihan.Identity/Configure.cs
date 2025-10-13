@@ -59,7 +59,7 @@ public static class Configure
                 {
                     var logger = context.HttpContext.RequestServices
                         .GetRequiredService<ILoggerFactory>().CreateLogger(nameof(JwtBearerEvents));
-                    logger.LogError("Authentication failed.", context.Exception);
+                    logger.LogError(context.Exception, "Authentication failed");
                     return Task.CompletedTask;
                 },
                 OnTokenValidated = context =>
@@ -76,7 +76,7 @@ public static class Configure
                 {
                     var logger = context.HttpContext.RequestServices
                         .GetRequiredService<ILoggerFactory>().CreateLogger(nameof(JwtBearerEvents));
-                    logger.LogError("OnChallenge error", context.Error, context.ErrorDescription);
+                    logger.LogError("OnChallenge error. {error}, {description}", context.Error, context.ErrorDescription);
                     return Task.CompletedTask;
                 }
             };

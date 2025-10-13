@@ -111,7 +111,7 @@ public class AccountController : ControllerBase
             Time = DateTime.Now,
         });
         db.SaveChanges();
-        logger.LogInformation($"user {user.UserName} signed up");
+        logger.LogInformation("user {username} signed up", user.UserName);
         return Ok();
     }
 
