@@ -1,11 +1,9 @@
-import React from "react";
-import { useHistory } from "react-router-dom";
+import { useEffect } from "react";
+import { Navigate } from "react-router";
 
 export default function SignOut() {
-    localStorage.removeItem('AuthJWT');
-    let history = useHistory();
-    history.push('/')
-    return (
-        <></>
-    );
+  useEffect(() => {
+    localStorage.removeItem("AuthJWT");
+  }, []);
+  return <Navigate to="/" />;
 }

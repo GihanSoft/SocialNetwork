@@ -1,253 +1,211 @@
-import React from "react";
 import {
-    Avatar,
-    Typography,
-    Card,
-    CardHeader,
-    CardContent,
-    IconButton,
-    CardActions,
-    MenuItem,
-    Menu,
-    ListItemIcon,
-    useMediaQuery,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
-    Button,
-    CardActionArea,
-    ButtonBase
-} from "@material-ui/core";
-import {
-    makeStyles,
-    createStyles,
-    Theme,
-    useTheme
-} from "@material-ui/core/styles";
-import { Icon } from "@mdi/react";
-import {
-    mdiDotsVertical,
-    mdiStar,
-    mdiStarOutline,
-    mdiDelete,
-    mdiCommentOutline
+  mdiCommentOutline,
+  mdiDelete,
+  mdiDotsVertical,
+  mdiStar,
+  mdiStarOutline,
 } from "@mdi/js";
-import { yellow, blueGrey } from "@material-ui/core/colors";
-import { useHistory } from "react-router";
-import { RequestManager } from "../Services/RequestManager";
-import useConfig from "../Services/Config";
-import { NavLink } from "react-router-dom";
+import { Icon } from "@mdi/react";
+import React from "react";
 
-const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        card: {
-            margin: theme.spacing(1.5),
-            boxShadow: "0 0 0 0 transparent"
-        },
-        cardHead: {
-            paddingTop: 8,
-            paddingBottom: 8
-        },
-        cardFooter: {
-            paddingTop: 4,
-            paddingBottom: 4
-        },
-        cardBody: {
-            borderWidth: "0.5px 0",
-            borderColor: blueGrey[700],
-            //border: 'solid'
-            paddingTop: 0,
-            paddingBottom: 0
-        },
-        bigAvatar: {
-            fontSize: "20pt",
-            width: 60,
-            height: 60
-        },
-        likeIcon: {
-            fill: yellow[700]
-        }
-    })
-);
+import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
+import ButtonBase from "@mui/material/ButtonBase";
+import Card from "@mui/material/Card";
+import CardActionArea from "@mui/material/CardActionArea";
+import CardActions from "@mui/material/CardActions";
+import CardContent from "@mui/material/CardContent";
+import CardHeader from "@mui/material/CardHeader";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import IconButton from "@mui/material/IconButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import { useTheme } from "@mui/material/styles";
+import Typography from "@mui/material/Typography";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { NavLink, useLocation, useNavigate } from "react-router";
+import { RequestManager } from "../Services/RequestManager";
 
 export interface PostProps {
-    id: number;
-    sender: string;
-    text: string;
-    time: string;
-    liked?: boolean;
-    likesCount: number;
-    commentCount: number;
+  id: number;
+  sender: string;
+  text: string;
+  time: string;
+  liked?: boolean;
+  likesCount: number;
+  commentCount: number;
 }
 
 export default function Post(props: PostProps) {
-    const classes = useStyles();
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    let [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
-    let isMenuOpen = Boolean(anchorEl);
-    let [isDialogOpen, setIsDialogOpen] = React.useState(false);
-    let [likeCount, setLikeCount] = React.useState(props.likesCount);
-    let [liked, setLiked] = React.useState(props.liked);
-    const toggleLiked = () => setLiked(!liked);
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-    const history = useHistory();
-    const config = useConfig;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  let [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+  let isMenuOpen = Boolean(anchorEl);
+  let [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  let [likeCount, setLikeCount] = React.useState(props.likesCount);
+  let [liked, setLiked] = React.useState(props.liked);
+  const toggleLiked = () => setLiked(!liked);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-    return (
-        <Card className={classes.card}>
-            <CardHeader
-                className={classes.cardHead}
-                avatar={
-                    <Avatar
-                        className={classes.bigAvatar}
-                        src={`${config.apiBase}/user/avatar/${props.sender}`}
-                        alt={props.sender[0].toUpperCase()}
-                    ></Avatar>
-                }
-                title={
-                    <NavLink
-                        to={"/user/" + props.sender}
-                        style={{ textDecoration: "none" }}
-                    >
-                        <ButtonBase
-                            style={{
-                                width: "100%",
-                                display: "flex",
-                                justifyContent: "start"
-                            }}
-                        >
-                            <Typography variant="h6">{props.sender}</Typography>
-                        </ButtonBase>
-                    </NavLink>
-                }
-                subheader={props.time}
-                action={
-                    <div>
-                        <IconButton onClick={handleClick}>
-                            <Icon path={mdiDotsVertical} size={1} />
-                        </IconButton>
-                        <Menu
-                            open={isMenuOpen}
-                            anchorEl={anchorEl}
-                            onBackdropClick={handleClose}
-                        >
-                            <MenuItem
-                                onClick={() => {
-                                    setIsDialogOpen(true);
-                                }}
-                            >
-                                <ListItemIcon>
-                                    <Icon path={mdiDelete} size={1} />
-                                </ListItemIcon>
-                                Delete
-                            </MenuItem>
-                            {/* <MenuItem onClick={handleClose}>
+  return (
+    <Card
+      sx={(theme) => ({
+        margin: theme.spacing(1.5),
+        boxShadow: "0 0 0 0 transparent",
+      })}
+    >
+      <CardHeader
+        sx={{ paddingTop: 1, paddingBottom: 1 }}
+        avatar={
+          <Avatar
+            sx={{ fontSize: "20pt", width: 60, height: 60 }}
+            src={`/api/user/avatar/${props.sender}`}
+            alt={props.sender[0].toUpperCase()}
+          ></Avatar>
+        }
+        title={
+          <NavLink
+            to={"/user/" + props.sender}
+            style={{ textDecoration: "none" }}
+          >
+            <ButtonBase
+              style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "start",
+              }}
+            >
+              <Typography variant="h6">{props.sender}</Typography>
+            </ButtonBase>
+          </NavLink>
+        }
+        subheader={props.time}
+        action={
+          <div>
+            <IconButton onClick={handleClick}>
+              <Icon path={mdiDotsVertical} size={1} />
+            </IconButton>
+            <Menu open={isMenuOpen} anchorEl={anchorEl}>
+              <MenuItem
+                onClick={() => {
+                  setIsDialogOpen(true);
+                }}
+              >
+                <ListItemIcon>
+                  <Icon path={mdiDelete} size={1} />
+                </ListItemIcon>
+                Delete
+              </MenuItem>
+              {/* <MenuItem onClick={handleClose}>
                                 <ListItemIcon>
                                     <Icon path={mdiPencil} size={1} />
                                 </ListItemIcon>
                                 item2
                             </MenuItem> */}
-                        </Menu>
-                        <Dialog
-                            fullScreen={isMobile}
-                            open={isDialogOpen}
-                            onBackdropClick={() => setIsDialogOpen(false)}
-                        >
-                            <DialogTitle>Warning</DialogTitle>
-                            <DialogContent>
-                                <DialogContentText>
-                                    Are you sure to remove post?
-                                </DialogContentText>
-                            </DialogContent>
-                            <DialogActions>
-                                <Button
-                                    color="primary"
-                                    onClick={() => {
-                                        var reqManager = new RequestManager(
-                                            config.apiBase
-                                        );
-                                        reqManager.Post(
-                                            "/post/delete",
-                                            xhr => {
-                                                if (xhr.status === 200) {
-                                                    handleClose();
-                                                    setIsDialogOpen(false);
-                                                    let location =
-                                                        history.location
-                                                            .pathname;
-                                                    history.replace(location);
-                                                }
-                                            },
-                                            props.id
-                                        );
-                                    }}
-                                >
-                                    Yes
-                                </Button>
-                                <Button
-                                    color="primary"
-                                    autoFocus
-                                    onClick={() => setIsDialogOpen(false)}
-                                >
-                                    No
-                                </Button>
-                            </DialogActions>
-                        </Dialog>
-                    </div>
-                }
-            ></CardHeader>
-            <CardActionArea
-                onClick={() => {
-                    history.push("/Post/View/" + props.id);
-                }}
-            >
-                <CardContent className={classes.cardBody}>
-                    <Typography
-                        variant="body1"
-                        color="textSecondary"
-                        display="block"
-                    >
-                        {props.text}
-                    </Typography>
-                </CardContent>
-            </CardActionArea>
-            <CardActions className={classes.cardFooter}>
-                <IconButton
-                    onClick={() => {
-                        let reqManager = new RequestManager(config.apiBase);
-                        reqManager.Post(
-                            `/Post/${liked ? "Remove" : ""}Like`,
-                            xhr => {
-                                if (xhr.status === 200) {
-                                    setLikeCount(parseInt(xhr.responseText));
-                                    toggleLiked();
-                                }
-                            },
-                            props.id
-                        );
-                    }}
+            </Menu>
+            <Dialog fullScreen={isMobile} open={isDialogOpen}>
+              <DialogTitle>Warning</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Are you sure to remove post?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  color="primary"
+                  onClick={() => {
+                    var reqManager = new RequestManager();
+                    reqManager.Post(
+                      "/post/delete",
+                      (xhr) => {
+                        if (xhr.status === 200) {
+                          handleClose();
+                          setIsDialogOpen(false);
+                          navigate(location, { replace: true });
+                        }
+                      },
+                      props.id
+                    );
+                  }}
                 >
-                    <Icon
-                        className={classes.likeIcon}
-                        path={liked ? mdiStar : mdiStarOutline}
-                        size={1}
-                    />
-                </IconButton>
-                <Typography variant="body1">{likeCount}</Typography>
-                <span style={{marginLeft:20}}></span>
-                <IconButton>
-                    <Icon path={mdiCommentOutline} size={1} />
-                </IconButton>
-                <Typography variant="body1">{props.commentCount}</Typography>
-            </CardActions>
-        </Card>
-    );
+                  Yes
+                </Button>
+                <Button
+                  color="primary"
+                  autoFocus
+                  onClick={() => setIsDialogOpen(false)}
+                >
+                  No
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </div>
+        }
+      ></CardHeader>
+      <CardActionArea
+        onClick={() => {
+          navigate("/Post/View/" + props.id);
+        }}
+      >
+        <CardContent
+          sx={(theme) => ({
+            borderWidth: "0.5px 0",
+            borderColor: theme.palette.grey[700],
+            paddingTop: 2,
+            paddingBottom: 2,
+          })}
+        >
+          <Typography variant="body1" color="textSecondary" display="block">
+            {props.text}
+          </Typography>
+        </CardContent>
+      </CardActionArea>
+      <CardActions
+        sx={{
+          paddingTop: 1,
+          paddingBottom: 1,
+        }}
+      >
+        <IconButton
+          onClick={() => {
+            let reqManager = new RequestManager();
+            reqManager.Post(
+              `/api/Post/${liked ? "Remove" : ""}Like`,
+              (xhr) => {
+                if (xhr.status === 200) {
+                  setLikeCount(parseInt(xhr.responseText));
+                  toggleLiked();
+                }
+              },
+              props.id
+            );
+          }}
+        >
+          <Icon
+            style={{ fill: "gold" }}
+            path={liked ? mdiStar : mdiStarOutline}
+            size={1}
+          />
+        </IconButton>
+        <Typography variant="body1">{likeCount}</Typography>
+        <span style={{ marginLeft: 20 }}></span>
+        <IconButton>
+          <Icon path={mdiCommentOutline} size={1} />
+        </IconButton>
+        <Typography variant="body1">{props.commentCount}</Typography>
+      </CardActions>
+    </Card>
+  );
 }
