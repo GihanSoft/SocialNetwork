@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace Gihan.Identity;
 
+[AttributeUsage(AttributeTargets.Method)]
 public sealed class AuthAttribute : Attribute, IActionFilter
 {
     private readonly string[] roles;
