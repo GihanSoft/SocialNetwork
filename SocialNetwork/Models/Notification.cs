@@ -1,14 +1,13 @@
 ﻿using SocialNetwork.EfCore;
 using System;
 
-namespace SocialNetwork.Models
+namespace SocialNetwork.Models;
+
+public class Notification : EntityBase
 {
-    public class Notification : EntityBase
-    {
-        public string Message { get; set; }
-        public string Link { get; set; }
-        public bool Seen { get; set; }
-        public DateTime Time { get; set; }
-        public virtual User User { get; set; }
-    }
+    public string Message { get; set; }
+    public string Link { get; set; }
+    public bool Seen { get; set; }
+    public DateTime Time { get; set; }
+    public virtual User User { get; set; }
 }

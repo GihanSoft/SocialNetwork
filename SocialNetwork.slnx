@@ -9,5 +9,8 @@
     <Project Path="Gihan.Security.Cryptography/Gihan.Security.Cryptography.csproj" />
     <Project Path="SocialNetwork/SocialNetwork.csproj" />
   </Folder>
-  <Folder Name="/[root]/" />
+  <Folder Name="/[root]/">
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+  </Folder>
 </Solution>
