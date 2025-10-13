@@ -51,8 +51,7 @@ public class PostController : ControllerBase
             var prePost = await db.Posts.FindAsync(id);
             if (prePost.Sender.IsPrivate)
             {
-                var hasAccess = currentUser?.FollowedFollows?
-                    .Any(f => f.Followed == prePost.Sender && f.Accepted) ?? false ||
+                var hasAccess = (currentUser?.FollowedFollows?.Any(f => f.Followed == prePost.Sender && f.Accepted) ?? false) ||
                     User.IsInRole("Admin");
                 if (!hasAccess)
                     return Forbid();
@@ -84,8 +83,7 @@ public class PostController : ControllerBase
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
         if (user.IsPrivate)
         {
-            var hasAccess = currentUser?.FollowedFollows?
-                    .Any(f => f.Followed == user && f.Accepted) ?? false ||
+            var hasAccess = (currentUser?.FollowedFollows?.Any(f => f.Followed == user && f.Accepted) ?? false) ||
                     User.IsInRole("Admin");
             if (!hasAccess)
                 return Forbid();
@@ -143,8 +141,9 @@ public class PostController : ControllerBase
         var post = await db.Posts.FindAsync(id);
         if (post == default)
             return BadRequest();
-        var hasAccess = currentUser?.FollowedFollows?
-            .Any(f => f.Followed == post.Sender && f.Accepted) ?? false ||
+        }
+
+        var hasAccess = (currentUser?.FollowedFollows?.Any(f => f.Followed == post.Sender && f.Accepted) ?? false) ||
             User.IsInRole("Admin");
         if (!hasAccess)
             return Forbid();
@@ -173,8 +172,7 @@ public class PostController : ControllerBase
             return BadRequest();
         var currentUser = await db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
-        var hasAccess = currentUser?.FollowedFollows?
-            .Any(f => f.Followed == superPost.Sender && f.Accepted) ?? false ||
+        var hasAccess = (currentUser?.FollowedFollows?.Any(f => f.Followed == superPost.Sender && f.Accepted) ?? false) ||
             User.IsInRole("Admin");
         if (!hasAccess)
             return Forbid();
@@ -222,8 +220,7 @@ public class PostController : ControllerBase
         {
             if (post.Sender.IsPrivate)
             {
-                var hasAccess = currentUser?.FollowedFollows?
-                        .Any(f => f.Followed == post.Sender && f.Accepted) ?? false ||
+                var hasAccess = (currentUser?.FollowedFollows?.Any(f => f.Followed == post.Sender && f.Accepted) ?? false) ||
                         User.IsInRole("Admin");
                 if (!hasAccess)
                     return Forbid();
