@@ -127,16 +127,18 @@ export default function Post(props: PostProps) {
                   color="primary"
                   onClick={() => {
                     var reqManager = new RequestManager();
-                    reqManager.Post(
-                      "/post/delete",
+                    reqManager.Send(
+                      `/api/post/delete/${props.id}`,
+                      "DELETE",
+                      undefined,
+                      undefined,
                       (xhr) => {
                         if (xhr.status === 200) {
                           handleClose();
                           setIsDialogOpen(false);
                           navigate(location, { replace: true });
                         }
-                      },
-                      props.id
+                      }
                     );
                   }}
                 >

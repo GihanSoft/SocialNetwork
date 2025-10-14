@@ -8,7 +8,6 @@ using Gihan.Identity;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 using SocialNetwork.Data;
 using SocialNetwork.Models;
@@ -21,7 +20,7 @@ public class PostController(AppDbContext _db) : ControllerBase
     private readonly AppDbContext _db = _db;
 
     [HttpPost, Auth]
-    public async ValueTask<IActionResult> View(long? id, [FromBody]ReqVm postReq)
+    public async ValueTask<IActionResult> View(long? id, [FromBody] ReqVm postReq)
     {
         if (!ModelState.IsValid)
         {
@@ -44,8 +43,8 @@ public class PostController(AppDbContext _db) : ControllerBase
             var prePost = await _db.Posts.FindAsync(id);
             if (prePost.Sender.IsPrivate)
             {
-                var hasAccess = (currentUser?.FollowedFollows?.Any(f => f.Followed == prePost.Sender && f.Accepted) ?? false) ||
-                    User.IsInRole("Admin");
+                var hasAccess = User.IsInRole("Admin") ||
+                    (currentUser?.FollowedFollows?.Any(f => f.Followed == prePost.Sender && f.Accepted) ?? false);
                 if (!hasAccess)
                 {
                     return Forbid();
@@ -55,24 +54,28 @@ public class PostController(AppDbContext _db) : ControllerBase
             return Ok(prePost.ConvertToVm(currentUser));
         }
 
-        IEnumerable<Post> prePosts;
-        prePosts = currentUser.FollowedFollows.Where(f => f.Accepted)
-            .Select(f => f.Followed).SelectMany(u => u.Posts).Where(p => p.Parent == null);
+        var prePosts = _db.Follows
+            .Where(f => f.Follower == currentUser && f.Accepted)
+            .SelectMany(f => f.Followed.Posts)
+            .Where(p => p.Parent == null)
+            ;
         prePosts = postReq.TowardOlds ?
             prePosts.OrderByDescending(p => p.Time) :
             prePosts.OrderBy(p => p.Time);
         if (postReq.LastGuttedId != null)
         {
-            prePosts = prePosts.SkipWhile(p => p.Id != postReq.LastGuttedId).Skip(1);
+            prePosts = postReq.TowardOlds
+                ? prePosts.Where(p => p.Id < postReq.LastGuttedId)
+                : prePosts.Where(p => p.Id > postReq.LastGuttedId);
         }
 
         prePosts = prePosts.Take(postReq.MaxCountToGet);
-        var posts = prePosts.ConvertToVm(currentUser);
+        var posts = await prePosts.ConvertToVm(currentUser).ToListAsync();
         return Ok(posts);
     }
 
     [HttpPost]
-    public async ValueTask<IActionResult> UserPosts(string id, [FromBody]ReqVm postReq)
+    public async ValueTask<IActionResult> UserPosts(string id, [FromBody] ReqVm postReq)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.UserName == id);
         if (user == null || !ModelState.IsValid)
@@ -92,22 +95,24 @@ public class PostController(AppDbContext _db) : ControllerBase
             }
         }
 
-        IEnumerable<Post> prePosts = user.Posts;
-        prePosts = postReq.TowardOlds ?
-            prePosts.OrderByDescending(p => p.Time) :
-            prePosts.OrderBy(p => p.Time);
+        var prePosts = _db.Posts.Where(a => a.Sender == user);
+        prePosts = postReq.TowardOlds
+            ? prePosts.OrderByDescending(p => p.Time)
+            : prePosts.OrderBy(p => p.Time);
         if (postReq.LastGuttedId != null)
         {
-            prePosts = prePosts.SkipWhile(p => p.Id != postReq.LastGuttedId).Skip(1);
+            prePosts = postReq.TowardOlds
+                ? prePosts.Where(p => p.Id < postReq.LastGuttedId)
+                : prePosts.Where(p => p.Id > postReq.LastGuttedId);
         }
 
         prePosts = prePosts.Take(postReq.MaxCountToGet);
-        var posts = prePosts.ConvertToVm(currentUser);
+        var posts = await prePosts.ConvertToVm(currentUser).ToListAsync();
         return Ok(posts);
     }
 
     [HttpPost]
-    public async ValueTask<IActionResult> Trends([FromBody]ReqVm postReq)
+    public async ValueTask<IActionResult> Trends([FromBody] ReqVm postReq)
     {
         if (!ModelState.IsValid)
         {
@@ -119,7 +124,7 @@ public class PostController(AppDbContext _db) : ControllerBase
         IEnumerable<Post> prePosts;
         prePosts = _db.Posts.Where(p =>
             p.Parent == null &&
-            (!p.Sender.IsPrivate || 
+            (!p.Sender.IsPrivate ||
                 p.Sender.FollowerFollows.Any(f => f.Follower == currentUser && f.Accepted)
             )
         )
@@ -138,7 +143,7 @@ public class PostController(AppDbContext _db) : ControllerBase
     }
 
     [HttpPost]
-    public async ValueTask<IActionResult> PostComments(long id, [FromBody]ReqVm postReq)
+    public async ValueTask<IActionResult> PostComments(long id, [FromBody] ReqVm postReq)
     {
         if (!ModelState.IsValid)
         {
@@ -179,7 +184,7 @@ public class PostController(AppDbContext _db) : ControllerBase
         return Ok(posts);
     }
     [HttpPost]
-    public async ValueTask<IActionResult> SendComment(long id, [FromBody]PostVm post)
+    public async ValueTask<IActionResult> SendComment(long id, [FromBody] PostVm post)
     {
         if (!ModelState.IsValid)
         {
@@ -219,7 +224,7 @@ public class PostController(AppDbContext _db) : ControllerBase
     }
 
     [HttpPost, Auth]
-    public async ValueTask<IActionResult> Send([FromBody]PostVm post)
+    public async ValueTask<IActionResult> Send([FromBody] PostVm post)
     {
         var currentUser = await _db.Users.FirstOrDefaultAsync(u =>
             u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -235,7 +240,7 @@ public class PostController(AppDbContext _db) : ControllerBase
     }
 
     [HttpPost, Auth]
-    public async ValueTask<IActionResult> Like([FromBody]long? postId)
+    public async ValueTask<IActionResult> Like([FromBody] long? postId)
     {
         if (postId is null)
         {
@@ -285,7 +290,7 @@ public class PostController(AppDbContext _db) : ControllerBase
     }
 
     [HttpPost, Auth]
-    public async ValueTask<IActionResult> RemoveLike([FromBody]long? postId)
+    public async ValueTask<IActionResult> RemoveLike([FromBody] long? postId)
     {
         if (postId is null)
         {
@@ -306,77 +311,20 @@ public class PostController(AppDbContext _db) : ControllerBase
         return Ok(post.Likes.Count);
     }
 
-    [HttpPost, Auth]
-    public async ValueTask<IActionResult> Delete([FromBody]long? postId)
+    [HttpDelete, Auth]
+    public async ValueTask<IActionResult> Delete(long id)
     {
-        if (postId is null)
-        {
-            return BadRequest();
-        }
+        var isAdmin = User.IsInRole("admin");
+        var username = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var post = await _db.Posts.FindAsync(postId);
-        if (post == null)
+        var post = await _db.Posts.FirstOrDefaultAsync(p => p.Id == id && (isAdmin || p.Sender.UserName == username));
+        if (post is null)
         {
-            return Ok();
-        }
-
-        var user = await _db.Users.FirstOrDefaultAsync(u =>
-            u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier));
-        if (post.Sender != user && !User.IsInRole("admin"))
-        {
-            return Forbid();
+            return NotFound();
         }
 
         _db.Remove(post);
         await _db.SaveChangesAsync();
         return Ok();
     }
-
-//        [HttpPost]
-//        public async ValueTask<IActionResult> Search([FromQuery]string s, [FromBody]ReqVm postReq)
-//        {
-//            if (!ModelState.IsValid || postReq is null)
-//                return BadRequest(ModelState);
-
-//            var user = User.Identity.IsAuthenticated ? await db.Users.FirstOrDefaultAsync(u =>
-//                u.UserName == User.FindFirstValue(ClaimTypes.NameIdentifier)) : null;
-//            var s1p = new SqlParameter("s1", $"{s}%");
-//            var s2p = new SqlParameter("s2", $"%{s}%");
-
-//            var order = postReq.TowardOlds ? "DESC" : "ASC";
-
-//            var sql =
-//$@"DECLARE @tbl TABLE(
-//    [R]        INT,
-//    [Id]       BIGINT,
-//    [Text]     NVARCHAR(MAX),
-//    [Time]     DATETIMEOFFSET(7),
-//    [SenderId] INT,
-//    [ParentId] BIGINT            
-//    )
-
-//INSERT INTO @tbl
-//SELECT DISTINCT ROW_NUMBER() OVER(ORDER BY [Time] {order}) AS R, * FROM [Posts]
-//WHERE [Text] LIKE @s1 OR [Text] LIKE @s2;
-
-//SELECT * FROM @tbl
-//ORDER BY [Time] {order}";
-
-//            if (postReq.LastGuttedId != null)
-//            {
-//                var skipPart =
-//$@"
-//OFFSET (
-//    SELECT TOP 1 R FROM @tbl AS T
-//    WHERE T.Id = {postReq.LastGuttedId} 
-//) rows
-//FETCH NEXT {postReq.MaxCountToGet} ROWS ONLY;";
-//                sql += skipPart;
-//            }
-//            else
-//                sql = sql.Replace("DISTINCT", $"DISTINCT TOP {postReq.MaxCountToGet}");
-//            var prePosts = db.Posts.FromSqlRaw(sql, s1p, s2p);
-//            var posts = prePosts.ToArray().ConvertToVm(user);
-//            return Ok(posts);
-//        }
 }
